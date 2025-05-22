@@ -1,0 +1,281 @@
+package com.example.lol_manina_app.utils.view
+
+import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.lol_manina_app.model.ChampionEntity
+import com.example.lol_manina_app.model.ChampionImage
+import com.example.lol_manina_app.model.ChampionViewModel
+import com.example.lol_manina_app.model.SummonerViewModel
+
+class LoLMain : ComponentActivity() {
+
+    companion object { 
+        
+        const val TAG = "MyTag" 
+
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        setContent {
+            MainCompose()
+        }
+    }
+}
+
+
+@Composable
+fun MainCompose(viewModel: ChampionViewModel = viewModel()) {
+    val champions by viewModel.allChampions.observeAsState(emptyList())
+    var searchQuery by remember { mutableStateOf("") }
+    var showOnlyFavorites by remember { mutableStateOf(false) }
+
+    var filteredList = champions
+        .filter { it.name.contains(searchQuery, ignoreCase = true) }
+        .filter { !showOnlyFavorites || it.isFavorite }
+
+    Log.d("khoon", "initScreen")
+
+    ConstraintLayout(modifier = Modifier.fillMaxSize()
+        .padding(WindowInsets.statusBars.asPaddingValues())) {
+        val (col1, col2, col3) = createRefs()
+        SearchBar(searchQuery, onQueryChanged = { searchQuery = it },
+                    modifier = Modifier.constrainAs(col1) {
+            top.linkTo(parent.top, margin = 16.dp)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        )
+
+        FavoriteToggleView(
+            isChecked = showOnlyFavorites,
+            onCheckedChange = { showOnlyFavorites = it },
+            modifier = Modifier.constrainAs(col2) {
+                top.linkTo(col1.bottom, margin = 8.dp)
+                end.linkTo(parent.end , margin = 8.dp)
+            }
+                .wrapContentHeight()
+
+        )
+
+        Box(
+            modifier = Modifier.constrainAs(col3) {
+                    top.linkTo(col2.bottom, margin = 8.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+                .wrapContentHeight(),
+            contentAlignment = Alignment.Center
+        ) {
+            when {
+                champions.isEmpty() && searchQuery.isBlank() -> {
+                    Text("No data")
+                }
+                filteredList.isEmpty() -> {
+                    Text("No result data")
+                }
+                else -> {
+                    InitScreen(
+                        filteredList,
+                        onFavoriteClick = { viewModel.toggleFavorite(it) }
+                    )
+                }
+            }
+        }}
+}
+
+@Composable
+fun FavoriteToggleView(
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Only Favorite")
+        Spacer(modifier.width(8.dp))
+        Switch(checked = isChecked, onCheckedChange = onCheckedChange)
+    }
+}
+
+@Composable
+fun SearchBar(
+    query: String,
+    onQueryChanged: (String) -> Unit,
+    modifier: Modifier = Modifier) {
+
+    Row {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChanged,
+            label = { Text("Enter search a Champion") },
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        )
+    }
+
+}
+
+@Composable
+fun InitScreen(
+    filteredList: List<ChampionEntity>,
+    modifier: Modifier = Modifier,
+    onFavoriteClick: (ChampionEntity) -> Unit
+) {
+
+    LazyColumn(modifier = modifier.fillMaxWidth()) {
+        //5 column
+        items(filteredList.chunked(4)) { rowItems ->
+            LazyRow(
+                modifier = modifier
+                    .fillMaxWidth()
+            ) {
+                items(rowItems) { champion ->
+
+                    Box(
+                        modifier = Modifier
+                            .size(110.dp)
+                            .padding(8.dp)
+                    ) {
+                        ChampionImage(champion)
+
+                        IconButton(onClick = { onFavoriteClick(champion) },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd) // <-- Top-left
+                                .padding(4.dp)
+                                .size(24.dp)) {
+                            Icon(
+                                imageVector = if (champion.isFavorite) Icons.Default.Star
+                                else Icons.Default.StarBorder, tint = Color.Yellow,
+                                contentDescription = ""
+                            )
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+}
+
+
+
+
+
+
+
+@Composable
+fun SearchScreen(viewModel: SummonerViewModel = viewModel(), modifier: Modifier) {
+    var input by remember { mutableStateOf(TextFieldValue("")) }
+    var result by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    Column(modifier = modifier
+        .fillMaxWidth()
+        .wrapContentHeight()) {
+        TextField(
+            value = input,
+            onValueChange = { input = it },
+            label = { Text(text = "Enter search keyword") },
+            modifier = modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = modifier.height(16.dp))
+
+        Button(
+            onClick = { viewModel.fetchSummonerInfo(input.text)
+                        Toast.makeText(context, input.text , Toast.LENGTH_SHORT).show()
+                      },
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text(text = "Search")
+        }
+
+        Spacer(modifier = modifier.height(32.dp))
+
+        if (result.isNotEmpty()) {
+
+        }
+    }
+
+
+    fun chunkByMaxWidth(items: List<String>, maxWidth: Int, itemWidth: Int): List<List<String>> {
+        val chunks = mutableListOf<MutableList<String>>()
+        var currentChunk = mutableListOf<String>()
+        var currentWidth = 0
+
+        for (item in items) {
+            val itemSize = itemWidth * item.length  // Estimating width by length
+
+            if (currentWidth + itemSize <= maxWidth) {
+                currentChunk.add(item)
+                currentWidth += itemSize
+            } else {
+                chunks.add(currentChunk)
+                currentChunk = mutableListOf(item)
+                currentWidth = itemSize
+            }
+        }
+
+        if (currentChunk.isNotEmpty()) {
+            chunks.add(currentChunk)
+        }
+
+        return chunks
+    }
+
+}
