@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.lol_manina_app.LoLApp.Companion.pref
 import com.example.lol_manina_app.data.api.NetworkManager
 import com.example.lol_manina_app.data.db.ChampionDatabase
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,11 +28,11 @@ class ChampionViewModel(application: Application) : AndroidViewModel(application
     val result = _result.asStateFlow()
     private val championDao = ChampionDatabase.getDatabase(application).championDao()
     private val _championList = MutableStateFlow<List<String>>(emptyList())
-    private val _championMap = MutableStateFlow<Map<Int, String>>(emptyMap())
     val championList = _championList.asStateFlow()
+    private val _championMap = MutableStateFlow<Map<Int, String>>(emptyMap())
     val championMap = _championMap.asStateFlow()
     val allChampions: LiveData<List<ChampionEntity>> = championDao.getAllChampions().asLiveData()
-
+    private val gson = Gson()
 
     init {
         fetchChampionData()
@@ -66,7 +67,6 @@ class ChampionViewModel(application: Application) : AndroidViewModel(application
 
                             val champions = championResponse.body()?.data
                             champions?.forEach { (_, info) ->
-                                //addOrUpdateChampion(info.key.toInt(), info.id)
                                 saveChampionImage(info.id, version)
 
 
@@ -124,13 +124,6 @@ class ChampionViewModel(application: Application) : AndroidViewModel(application
 
             }
         }
-    }
-
-    suspend fun getLocalImagePath(championName: String): String? {
-
-        Log.d("khoon","getLocalImage =  $championName"  )
-
-        return championDao.getChampionByName(championName)?.imagePath
     }
 
 

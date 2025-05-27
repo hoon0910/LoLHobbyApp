@@ -1,6 +1,5 @@
 package com.example.lol_manina_app.data.api
 
-import com.example.lol_manina_app.model.ChampionDataResponse
 import com.example.lol_manina_app.model.ChampionRotation
 import com.example.lol_manina_app.model.CurrentGameInfo
 import com.example.lol_manina_app.model.LeagueEntryDTO

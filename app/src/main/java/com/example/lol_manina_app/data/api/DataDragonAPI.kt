@@ -12,4 +12,10 @@ interface DataDragonAPI {
 
     @GET("api/versions.json")
     suspend fun getVersions(): Response<List<String>>
+
+    @GET("cdn/{version}/data/en_US/champion/{champion}.json")
+    suspend fun getChampionDetail(
+        @Path("version") version: String,
+        @Path("champion") champion: String
+    ): ChampionDataResponse
 }

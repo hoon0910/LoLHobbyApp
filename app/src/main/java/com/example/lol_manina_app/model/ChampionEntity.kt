@@ -9,5 +9,6 @@ data class ChampionEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "name") val name: String,
     val imagePath: String,
-    val isFavorite: Boolean = false // default =  false
+    val detail: ChampionDetail? = null, // default = null
+    val isFavorite: Boolean = false, // default =  false
 )
