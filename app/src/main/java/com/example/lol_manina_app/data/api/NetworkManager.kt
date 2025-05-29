@@ -7,11 +7,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.OkHttpClient
 
 object NetworkManager {
-    //private const val BASE_URL = "https://REGION.api.riotgames.com/lol/"
     private const val BASE_URL = "https://kr.api.riotgames.com/lol/"
     private const val DDRAGON_URL = "https://ddragon.leagueoflegends.com/"
 
-    // Riot API 클라이언트
+    // Riot API client
     private val riotApiClient: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -28,12 +27,6 @@ object NetworkManager {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(DDRAGON_URL)
-        .client(createOkHttpClient())
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
 
     private fun createOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()

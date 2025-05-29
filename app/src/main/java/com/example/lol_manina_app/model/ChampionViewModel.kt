@@ -25,30 +25,14 @@ import kotlin.collections.component2
 
 class ChampionViewModel(application: Application) : AndroidViewModel(application) {
     private val _result = MutableStateFlow<String>("")
-    val result = _result.asStateFlow()
     private val championDao = ChampionDatabase.getDatabase(application).championDao()
     private val _championList = MutableStateFlow<List<String>>(emptyList())
-    val championList = _championList.asStateFlow()
     private val _championMap = MutableStateFlow<Map<Int, String>>(emptyMap())
-    val championMap = _championMap.asStateFlow()
     val allChampions: LiveData<List<ChampionEntity>> = championDao.getAllChampions().asLiveData()
-    private val gson = Gson()
 
     init {
         fetchChampionData()
     }
-
-
-    fun insert(champion: ChampionEntity) = viewModelScope.launch {
-        championDao.insert(champion)
-    }
-
-    fun deleteAll() = viewModelScope.launch {
-        championDao.deleteAll()
-    }
-
-
-
 
     private fun fetchChampionData() {
         viewModelScope.launch {
@@ -68,9 +52,6 @@ class ChampionViewModel(application: Application) : AndroidViewModel(application
                             val champions = championResponse.body()?.data
                             champions?.forEach { (_, info) ->
                                 saveChampionImage(info.id, version)
-
-
-
                             }
                         }
                     } else {
@@ -148,7 +129,7 @@ class ChampionViewModel(application: Application) : AndroidViewModel(application
 
     }
 
-    suspend fun saveImageLocally(context: Context, imageUrl: String, fileName: String): String? {
+    fun saveImageLocally(context: Context, imageUrl: String, fileName: String): String? {
 
         Log.d("khoon", "SaveImageLocally fn is called")
         Log.d("khoon", "SaveImageLocally:: image $imageUrl")

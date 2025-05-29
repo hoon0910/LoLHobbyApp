@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -43,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -70,45 +72,54 @@ class LoLMain : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun MainCompose(viewModel: ChampionViewModel = viewModel()) {
     val champions by viewModel.allChampions.observeAsState(emptyList())
     var searchQuery by remember { mutableStateOf("") }
     var showOnlyFavorites by remember { mutableStateOf(false) }
 
-    var filteredList = champions
+    val filteredList = champions
         .filter { it.name.contains(searchQuery, ignoreCase = true) }
         .filter { !showOnlyFavorites || it.isFavorite }
 
     Log.d("khoon", "initScreen")
 
-    ConstraintLayout(modifier = Modifier.fillMaxSize()
-        .padding(WindowInsets.statusBars.asPaddingValues())) {
+    ConstraintLayout(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                bottom = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp
+            )
+    ) {
         val (col1, col2, col3) = createRefs()
-        SearchBar(searchQuery, onQueryChanged = { searchQuery = it },
-                    modifier = Modifier.constrainAs(col1) {
-            top.linkTo(parent.top, margin = 16.dp)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-        }
-            .fillMaxWidth()
-            .wrapContentHeight(),
+        SearchBar(
+            query = searchQuery,
+            onQueryChanged = { searchQuery = it },
+            modifier = Modifier
+                .constrainAs(col1) {
+                    top.linkTo(parent.top, margin = 16.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+                .fillMaxWidth()
+                .wrapContentHeight()
         )
 
         FavoriteToggleView(
             isChecked = showOnlyFavorites,
             onCheckedChange = { showOnlyFavorites = it },
-            modifier = Modifier.constrainAs(col2) {
-                top.linkTo(col1.bottom, margin = 8.dp)
-                end.linkTo(parent.end , margin = 8.dp)
-            }
+            modifier = Modifier
+                .constrainAs(col2) {
+                    top.linkTo(col1.bottom, margin = 8.dp)
+                    end.linkTo(parent.end, margin = 8.dp)
+                }
                 .wrapContentHeight()
-
         )
 
         Box(
-            modifier = Modifier.constrainAs(col3) {
+            modifier = Modifier
+                .constrainAs(col3) {
                     top.linkTo(col2.bottom, margin = 8.dp)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
@@ -125,12 +136,14 @@ fun MainCompose(viewModel: ChampionViewModel = viewModel()) {
                 }
                 else -> {
                     InitScreen(
-                        filteredList,
+                        filteredList = filteredList,
                         onFavoriteClick = { viewModel.toggleFavorite(it) }
                     )
                 }
             }
-        }}
+        }
+    }
+    Spacer(Modifier.width(16.dp))
 }
 
 @Composable
@@ -140,12 +153,11 @@ fun FavoriteToggleView(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .padding(8.dp),
+        modifier = modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("Only Favorite")
-        Spacer(modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Switch(checked = isChecked, onCheckedChange = onCheckedChange)
     }
 }
@@ -154,19 +166,14 @@ fun FavoriteToggleView(
 fun SearchBar(
     query: String,
     onQueryChanged: (String) -> Unit,
-    modifier: Modifier = Modifier) {
-
-    Row {
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChanged,
-            label = { Text("Enter search a Champion") },
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-    }
-
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChanged,
+        label = { Text("Enter search a Champion") },
+        modifier = modifier.padding(8.dp)
+    )
 }
 
 @Composable
@@ -175,48 +182,38 @@ fun InitScreen(
     modifier: Modifier = Modifier,
     onFavoriteClick: (ChampionEntity) -> Unit
 ) {
-
     LazyColumn(modifier = modifier.fillMaxWidth()) {
-        //5 column
         items(filteredList.chunked(4)) { rowItems ->
             LazyRow(
-                modifier = modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 items(rowItems) { champion ->
-
                     Box(
                         modifier = Modifier
                             .size(110.dp)
                             .padding(8.dp)
                     ) {
                         ChampionImage(champion)
-
-                        IconButton(onClick = { onFavoriteClick(champion) },
+                        IconButton(
+                            onClick = { onFavoriteClick(champion) },
                             modifier = Modifier
-                                .align(Alignment.TopEnd) // <-- Top-left
+                                .align(Alignment.TopEnd)
                                 .padding(4.dp)
-                                .size(24.dp)) {
+                                .size(24.dp)
+                        ) {
                             Icon(
                                 imageVector = if (champion.isFavorite) Icons.Default.Star
-                                else Icons.Default.StarBorder, tint = Color.Yellow,
-                                contentDescription = ""
+                                else Icons.Default.StarBorder,
+                                tint = Color.Yellow,
+                                contentDescription = "Favorite"
                             )
                         }
                     }
                 }
             }
-
         }
-
     }
 }
-
-
-
-
-
-
 
 @Composable
 fun SearchScreen(viewModel: SummonerViewModel = viewModel(), modifier: Modifier) {
