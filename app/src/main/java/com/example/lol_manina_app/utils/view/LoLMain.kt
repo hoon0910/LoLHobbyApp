@@ -48,12 +48,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.lol_manina_app.model.ChampionEntity
 import com.example.lol_manina_app.model.ChampionImage
 import com.example.lol_manina_app.model.ChampionViewModel
 import com.example.lol_manina_app.model.SummonerViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoLMain : ComponentActivity() {
 
     companion object { 
@@ -73,7 +75,7 @@ class LoLMain : ComponentActivity() {
 }
 
 @Composable
-fun MainCompose(viewModel: ChampionViewModel = viewModel()) {
+fun MainCompose(viewModel: ChampionViewModel = hiltViewModel()) {
     val champions by viewModel.allChampions.observeAsState(emptyList())
     var searchQuery by remember { mutableStateOf("") }
     var showOnlyFavorites by remember { mutableStateOf(false) }
@@ -216,7 +218,7 @@ fun InitScreen(
 }
 
 @Composable
-fun SearchScreen(viewModel: SummonerViewModel = viewModel(), modifier: Modifier) {
+fun SearchScreen(viewModel: SummonerViewModel = hiltViewModel(), modifier: Modifier) {
     var input by remember { mutableStateOf(TextFieldValue("")) }
     var result by remember { mutableStateOf("") }
 

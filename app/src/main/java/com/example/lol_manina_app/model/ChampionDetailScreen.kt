@@ -29,12 +29,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import androidx.compose.ui.platform.LocalDensity
 
 @Composable
-fun ChampionDetailScreen(viewModel: ChampionDetailViewModel = viewModel(),
+fun ChampionDetailScreen(viewModel: ChampionDetailViewModel = hiltViewModel(),
                          name: String, imageUrl: String) {
     val detail = viewModel.championDetail.collectAsState().value
     LaunchedEffect(name) {

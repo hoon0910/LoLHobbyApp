@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.lol_manina_app.model.ChampionDetailScreen
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ChampionDetailActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

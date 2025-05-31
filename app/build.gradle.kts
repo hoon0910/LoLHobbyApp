@@ -2,7 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28" // use the latest compatible version
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
+    id("kotlin-kapt")
 }
 
 android {
@@ -77,5 +79,12 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-
+    // Hilt
+    implementation(libs.hilt)
+    implementation(libs.hilt.android)
+    implementation(libs.metadata)
+    kapt(libs.hilt.compiler)
+    
+    // Hilt Compose
+    implementation(libs.androidx.hilt.navigation.compose.v110)
 }

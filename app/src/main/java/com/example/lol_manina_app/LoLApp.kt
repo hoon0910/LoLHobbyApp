@@ -5,15 +5,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
-import com.example.lol_manina_app.utils.view.appModule
-import com.example.lol_manina_app.utils.view.repositoryModule
-import com.example.lol_manina_app.utils.view.viewModelModule
 import com.google.gson.Gson
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class LoLApp: Application() {
 
     companion object{
@@ -31,11 +26,6 @@ class LoLApp: Application() {
         super.onCreate()
         Log.d("khoon", "application onCreate")
         INSTANCE = this
-        startKoin {
-            androidLogger(Level.NONE)
-            androidContext(this@LoLApp)
-            modules(listOf(appModule, viewModelModule, repositoryModule))
-        }
         pref = AppPrefUtil(applicationContext)
     }
 
