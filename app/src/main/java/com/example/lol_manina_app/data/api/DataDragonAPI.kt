@@ -4,6 +4,7 @@ import com.example.lol_manina_app.model.ChampionDataResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Url
 
 interface DataDragonAPI {
 
@@ -18,4 +19,10 @@ interface DataDragonAPI {
         @Path("version") version: String,
         @Path("champion") champion: String
     ): ChampionDataResponse
+
+    @GET("cdn/{version}/img/champion/{champion}.png")
+    suspend fun getChampionImage(
+        @Path("version") version: String,
+        @Path("champion") champion: String
+    ): Response<okhttp3.ResponseBody>
 }

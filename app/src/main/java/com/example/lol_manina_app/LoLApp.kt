@@ -7,13 +7,13 @@ import android.util.Log
 import androidx.core.content.edit
 import com.google.gson.Gson
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
 class LoLApp: Application() {
 
-    companion object{
+    companion object {
         lateinit var INSTANCE: LoLApp
-        lateinit var pref: AppPrefUtil
         fun getContext(): Context = INSTANCE.applicationContext
         fun getGson(): Gson = Gson()
     }
@@ -26,14 +26,11 @@ class LoLApp: Application() {
         super.onCreate()
         Log.d("khoon", "application onCreate")
         INSTANCE = this
-        pref = AppPrefUtil(applicationContext)
     }
 
-
-    class AppPrefUtil(context: Context) {
-        private val prefs: SharedPreferences =
-            context.getSharedPreferences("app_pref", MODE_PRIVATE)
-
+    class AppPrefUtil @Inject constructor(
+        private val prefs: SharedPreferences
+    ) {
         fun getApikey() = prefs.getString("apikey", "")
 
         fun setApikey(value: String) {
@@ -49,7 +46,5 @@ class LoLApp: Application() {
         }
 
         fun getVersion() = prefs.getString("gameversion", "13.9.1")
-
     }
-
 }
