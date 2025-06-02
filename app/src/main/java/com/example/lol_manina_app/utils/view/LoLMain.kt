@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -25,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Button
@@ -50,9 +52,9 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.lol_manina_app.model.ChampionEntity
-import com.example.lol_manina_app.model.ChampionImage
 import com.example.lol_manina_app.model.ChampionViewModel
 import com.example.lol_manina_app.model.SummonerViewModel
+import com.example.lol_manina_app.ui.components.ChampionImage
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -94,35 +96,53 @@ fun MainCompose(viewModel: ChampionViewModel = hiltViewModel()) {
                 bottom = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp
             )
     ) {
-        val (col1, col2, col3) = createRefs()
-        SearchBar(
-            query = searchQuery,
-            onQueryChanged = { searchQuery = it },
+        val (searchRow, content) = createRefs()
+        
+        Row(
             modifier = Modifier
-                .constrainAs(col1) {
+                .constrainAs(searchRow) {
                     top.linkTo(parent.top, margin = 16.dp)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
                 .fillMaxWidth()
-                .wrapContentHeight()
-        )
-
-        FavoriteToggleView(
-            isChecked = showOnlyFavorites,
-            onCheckedChange = { showOnlyFavorites = it },
-            modifier = Modifier
-                .constrainAs(col2) {
-                    top.linkTo(col1.bottom, margin = 8.dp)
-                    end.linkTo(parent.end, margin = 8.dp)
-                }
-                .wrapContentHeight()
-        )
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Enter search a Champion") },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear search",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+            )
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text("Only Favorite")
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(checked = showOnlyFavorites, onCheckedChange = { showOnlyFavorites = it })
+            }
+        }
 
         Box(
             modifier = Modifier
-                .constrainAs(col3) {
-                    top.linkTo(col2.bottom, margin = 8.dp)
+                .constrainAs(content) {
+                    top.linkTo(searchRow.bottom, margin = 8.dp)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
@@ -149,42 +169,17 @@ fun MainCompose(viewModel: ChampionViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun FavoriteToggleView(
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text("Only Favorite")
-        Spacer(modifier = Modifier.width(8.dp))
-        Switch(checked = isChecked, onCheckedChange = onCheckedChange)
-    }
-}
-
-@Composable
-fun SearchBar(
-    query: String,
-    onQueryChanged: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChanged,
-        label = { Text("Enter search a Champion") },
-        modifier = modifier.padding(8.dp)
-    )
-}
-
-@Composable
 fun InitScreen(
     filteredList: List<ChampionEntity>,
     modifier: Modifier = Modifier,
     onFavoriteClick: (ChampionEntity) -> Unit
 ) {
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
+    val bottomPadding = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp + 32.dp
+
+    LazyColumn(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = bottomPadding)
+    ) {
         items(filteredList.chunked(4)) { rowItems ->
             LazyRow(
                 modifier = Modifier.fillMaxWidth()

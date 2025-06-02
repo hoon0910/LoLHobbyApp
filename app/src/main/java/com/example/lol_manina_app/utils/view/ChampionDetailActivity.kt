@@ -3,7 +3,7 @@ package com.example.lol_manina_app.utils.view
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.example.lol_manina_app.model.ChampionDetailScreen
+import com.example.lol_manina_app.ui.components.ChampionDetailScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -14,7 +14,10 @@ class ChampionDetailActivity : ComponentActivity() {
 
         // Get data from Intent
         val name = intent.getStringExtra("champion_name") ?: "Unknown"
-        val imageUrl = intent.getStringExtra("champion_image_url") ?: ""
+        val imageUrl = if (intent.hasExtra("champion_image_url")) {
+            val url = intent.getStringExtra("champion_image_url")
+            if (url.isNullOrEmpty()) null else url
+        } else null
 
         setContent {
             ChampionDetailScreen(name = name, imageUrl = imageUrl)

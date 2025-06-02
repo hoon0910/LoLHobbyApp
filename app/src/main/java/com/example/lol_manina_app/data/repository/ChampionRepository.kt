@@ -88,15 +88,15 @@ class ChampionRepositoryImpl @Inject constructor(
 
     override suspend fun saveChampionImage(championName: String, version: String) {
         withContext(ioDispatcher) {
-            // checking existed champion
+            // Check if champion exists
             val existingChampion = championDao.getChampionByName(championName)
             
-            // checking image is existed.
+            // Check if image exists
             val imageFile = File(context.filesDir, "$championName.png")
             val shouldSaveImage = existingChampion == null || !imageFile.exists()
             
             if (shouldSaveImage) {
-                // get Image from the server champion is new or image is not existed.
+                // Get image from server if champion is new or image doesn't exist
                 val filePath = saveImageLocally(context, championName, version)
 
                 filePath?.let {

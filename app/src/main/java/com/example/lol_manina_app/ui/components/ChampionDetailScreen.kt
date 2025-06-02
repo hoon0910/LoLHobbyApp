@@ -1,4 +1,4 @@
-package com.example.lol_manina_app.model
+package com.example.lol_manina_app.ui.components
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -27,15 +27,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import androidx.compose.ui.platform.LocalDensity
+import com.example.lol_manina_app.R
+import com.example.lol_manina_app.model.ChampionDetailViewModel
 
 @Composable
 fun ChampionDetailScreen(viewModel: ChampionDetailViewModel = hiltViewModel(),
-                         name: String, imageUrl: String) {
+                         name: String, imageUrl: String?) {
     val detail = viewModel.championDetail.collectAsState().value
     LaunchedEffect(name) {
         viewModel.loadChampionJsonData(name)
@@ -66,13 +68,23 @@ fun ChampionDetailScreen(viewModel: ChampionDetailViewModel = hiltViewModel(),
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = name,
-                    modifier = Modifier
-                        .size(200.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                )
+                if (imageUrl != null) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = name,
+                        modifier = Modifier
+                            .size(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                } else {
+                    AsyncImage(
+                        model = R.drawable.no_image,
+                        contentDescription = name,
+                        modifier = Modifier
+                            .size(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = name,
@@ -95,14 +107,17 @@ fun ChampionDetailScreen(viewModel: ChampionDetailViewModel = hiltViewModel(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            Log.d("khoon", "Detail = ${detail?.info?.difficulty}")
             detail?.let {
+                Log.d("khoon", "Rendering champion detail for $name")
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(it.title, fontSize = 30.sp)
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(it.lore, fontSize = 20.sp)
                 }
-            } ?: Text("Loading...")
+            } ?: run {
+                Log.d("khoon", "Waiting for champion detail for $name")
+                Text("Loading...")
+            }
 
             Text("Difficulty: ${detail?.info?.difficulty?:0}/10", fontSize = 20.sp)
             SegmentedBarGauge(detail?.info?.difficulty ?:0)

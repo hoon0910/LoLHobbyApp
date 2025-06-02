@@ -13,6 +13,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,28 +30,50 @@ class ChampionDetailViewModel @Inject constructor(
 
     fun loadChampionJsonData(name: String) {
         viewModelScope.launch {
-            val dbResult = championDao.getChampionByName(name)
-
-            if (dbResult == null) {
-                Log.d("ChampionVM", "Champion '$name' not found in DB. Skipping update.")
-                return@launch
-            }
-            if (dbResult.detail == null) {
-                Log.d("khoon", "This &$name champ does not have json data")
-
+            withContext(ioDispatcher) {
                 try {
+                    // 1. Check champion info in DB
+                    val dbResult = championDao.getChampionByName(name)
+                    
+                    // 2. If exists in DB, check detail info
+                    if (dbResult != null) {
+                        if (dbResult.detail != null) {
+                            // Use detail from DB if available
+                            _championDetail.value = dbResult.detail
+                            Log.d("khoon", "Using champion detail from DB for $name")
+                            return@withContext
+                        }
+                    }
+
+                    // 3. If not in DB or no detail, fetch from API
+                    Log.d("khoon", "Fetching champion detail from API for $name")
                     val response = dataDragonApiService.getChampionDetail(appPrefUtil.getVersion().toString(), name)
                     val detail = response.data[name]
-                    Log.d("khoon", "Difficulty ${detail?.info?.difficulty}")
-
-                    val updated = dbResult.copy(detail = detail)
-                    championDao.insert(updated)
-                    _championDetail.value = detail
-
+                    
+                    if (detail != null) {
+                        Log.d("khoon", "Successfully fetched champion detail for $name")
+                        // 4. Save to DB
+                        val championEntity = if (dbResult != null) {
+                            dbResult.copy(detail = detail)
+                        } else {
+                            // Check if image file exists
+                            val imageFile = File(getApplication<Application>().filesDir, "$name.png")
+                            ChampionEntity(
+                                name = name,
+                                imagePath = (if (imageFile.exists()) imageFile.absolutePath else null),
+                                detail = detail
+                            )
+                        }
+                        championDao.insert(championEntity)
+                        _championDetail.value = detail
+                        Log.d("khoon", "Updated champion detail in UI for $name")
+                    } else {
+                        Log.e("ChampionVM", "Failed to get champion detail for $name")
+                    }
                 } catch (e: Exception) {
-                    Log.e("ChampionVM", "Failed to fetch from network: ${e.localizedMessage}")
+                    Log.e("ChampionVM", "Failed to fetch champion data: ${e.localizedMessage}")
                 }
-            } else _championDetail.value = dbResult.detail
+            }
         }
     }
 }
