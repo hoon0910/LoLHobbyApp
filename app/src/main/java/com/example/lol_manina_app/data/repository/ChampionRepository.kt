@@ -2,20 +2,16 @@ package com.example.lol_manina_app.data.repository
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.viewModelScope
 import com.example.lol_manina_app.data.api.DataDragonAPI
 import com.example.lol_manina_app.data.api.LeagueOfLegendAPI
 import com.example.lol_manina_app.data.db.ChampionDao
 import com.example.lol_manina_app.di.IoDispatcher
 import com.example.lol_manina_app.model.ChampionEntity
+import com.example.lol_manina_app.model.ChampionDetail
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -29,6 +25,7 @@ interface ChampionRepository {
     suspend fun fetchChampionData()
     suspend fun fetchChampionRotation(): List<String>
     suspend fun saveChampionImage(championName: String, version: String)
+    suspend fun getChampionDetail(name: String): ChampionDetail?
 }
 
 @Singleton
@@ -141,6 +138,44 @@ class ChampionRepositoryImpl @Inject constructor(
             Log.d("khoon", "IOException ${e.message}")
             e.printStackTrace()
             null
+        }
+    }
+
+    override suspend fun getChampionDetail(name: String): ChampionDetail? {
+        return withContext(ioDispatcher) {
+            // 1. Check champion info in DB
+            val dbResult = championDao.getChampionByName(name)
+            
+            // 2. If exists in DB, check detail info
+            if (dbResult != null && dbResult.detail != null) {
+                return@withContext dbResult.detail
+            }
+
+            // 3. If not in DB or no detail, fetch from API
+            try {
+                val versionResponse = dataDragonApiService.getVersions()
+                val version = versionResponse.body()?.firstOrNull() ?: "13.9.1"
+                val response = dataDragonApiService.getChampionDetail(version, name)
+                val detail = response.data[name]
+                
+                if (detail != null) {
+                    // 4. Save to DB
+                    val championEntity = if (dbResult != null) {
+                        dbResult.copy(detail = detail)
+                    } else {
+                        ChampionEntity(
+                            name = name,
+                            imagePath = null,
+                            detail = detail
+                        )
+                    }
+                    championDao.insert(championEntity)
+                    detail
+                } else null
+            } catch (e: Exception) {
+                Log.e("ChampionRepository", "Failed to fetch champion detail: ${e.message}")
+                null
+            }
         }
     }
 }
