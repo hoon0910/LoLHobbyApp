@@ -14,8 +14,7 @@ class LoLApp: Application() {
 
     companion object {
         lateinit var INSTANCE: LoLApp
-        fun getContext(): Context = INSTANCE.applicationContext
-        fun getGson(): Gson = Gson()
+
     }
 
     init {

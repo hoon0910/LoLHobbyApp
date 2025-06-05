@@ -32,9 +32,7 @@ class ChampionViewModel @Inject constructor(
     private fun fetchChampionData() {
         viewModelScope.launch {
             try {
-                val version = appPrefUtil.getVersion()
-                Log.d("khoon", version.toString())
-                
+
                 championRepository.fetchChampionData()
             } catch (e: Exception) {
                 println("Error fetching champion data: ${e.message}")

@@ -62,7 +62,11 @@ class ChampionRepositoryImpl @Inject constructor(
                 if (championResponse.isSuccessful) {
                     val champions = championResponse.body()?.data
                     champions?.forEach { (_, info) ->
-                        saveChampionImage(info.id, version)
+                        // Check if champion already exists in DB before saving
+                        val existingChampion = championDao.getChampionByName(info.id)
+                        if (existingChampion == null) {
+                            saveChampionImage(info.id, version)
+                        }
                     }
                 }
             }

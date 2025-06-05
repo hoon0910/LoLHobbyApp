@@ -26,22 +26,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,9 +39,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import com.example.lol_manina_app.model.ChampionEntity
 import com.example.lol_manina_app.model.ChampionViewModel
 import com.example.lol_manina_app.model.SummonerViewModel
+import com.example.lol_manina_app.navigation.NavGraph
 import com.example.lol_manina_app.ui.components.ChampionImage
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -77,7 +67,27 @@ class LoLMain : ComponentActivity() {
 }
 
 @Composable
-fun MainCompose(viewModel: ChampionViewModel = hiltViewModel()) {
+fun MainCompose() {
+    val navController = rememberNavController()
+    Log.d("khoon", "called MainCompose")
+
+    NavGraph(
+        navController = navController,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
+                bottom = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp
+            )
+    )
+}
+
+@Composable
+fun ChampionListScreen(
+    viewModel: ChampionViewModel = hiltViewModel(),
+    onSearchClick: () -> Unit,
+    onChampionClick: (String) -> Unit
+) {
     val champions by viewModel.allChampions.observeAsState(emptyList())
     var searchQuery by remember { mutableStateOf("") }
     var showOnlyFavorites by remember { mutableStateOf(false) }
@@ -157,7 +167,7 @@ fun MainCompose(viewModel: ChampionViewModel = hiltViewModel()) {
                     Text("No result data")
                 }
                 else -> {
-                    InitScreen(
+                    ChampIconList(
                         filteredList = filteredList,
                         onFavoriteClick = { viewModel.toggleFavorite(it) }
                     )
@@ -165,11 +175,10 @@ fun MainCompose(viewModel: ChampionViewModel = hiltViewModel()) {
             }
         }
     }
-    Spacer(Modifier.width(16.dp))
 }
 
 @Composable
-fun InitScreen(
+fun ChampIconList(
     filteredList: List<ChampionEntity>,
     modifier: Modifier = Modifier,
     onFavoriteClick: (ChampionEntity) -> Unit
