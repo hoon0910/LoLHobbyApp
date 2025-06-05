@@ -1,6 +1,5 @@
 package com.example.lol_manina_app.ui.components
 
-import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,15 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.lol_manina_app.model.ChampionEntity
-import com.example.lol_manina_app.utils.view.ChampionDetailActivity
 
 @Composable
-fun ChampionImage(champion: ChampionEntity) {
-    val context = LocalContext.current
+fun ChampionImage(
+    champion: ChampionEntity,
+    onChampionClick: (String, String) -> Unit
+) {
     val roundedCornerShape = RoundedCornerShape(16.dp)
 
     Card(
@@ -29,11 +28,7 @@ fun ChampionImage(champion: ChampionEntity) {
             .fillMaxWidth()
             .padding(2.dp)
             .clickable {
-                val intent = Intent(context, ChampionDetailActivity::class.java).apply {
-                    putExtra("champion_name", champion.name)
-                    putExtra("champion_image_url", champion.imagePath ?: "")
-                }
-                context.startActivity(intent)
+                onChampionClick(champion.name, champion.imagePath ?: "")
             },
         shape = roundedCornerShape
     ) {

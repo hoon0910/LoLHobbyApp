@@ -11,12 +11,11 @@ import com.example.lol_manina_app.utils.view.SearchScreen
 
 fun NavGraphBuilder.championListScreen(
     onSearchClick: () -> Unit,
-    onChampionClick: (String) -> Unit
+    onChampionClick: (String, String) -> Unit
 ) {
     composable(NavRoutes.ChampionList.route) {
         ChampionListScreen(
             viewModel = hiltViewModel(),
-            onSearchClick = onSearchClick,
             onChampionClick = onChampionClick
         )
     }
@@ -37,13 +36,17 @@ fun NavGraphBuilder.championDetailScreen(
     composable(
         route = NavRoutes.ChampionDetail.route,
         arguments = listOf(
-            navArgument("championId") { type = NavType.StringType }
+            navArgument("championId") { type = NavType.StringType },
+            navArgument("imageUrl") { type = NavType.StringType }
         )
     ) { backStackEntry ->
         val championId = backStackEntry.arguments?.getString("championId") ?: return@composable
+        val imageUrl = backStackEntry.arguments?.getString("imageUrl")?.let { 
+            NavRoutes.decodeUrl(it)
+        } ?: return@composable
         ChampionDetailScreen(
             name = championId,
-            imageUrl = null
+            imageUrl = imageUrl
         )
     }
 } 

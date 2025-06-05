@@ -85,8 +85,7 @@ fun MainCompose() {
 @Composable
 fun ChampionListScreen(
     viewModel: ChampionViewModel = hiltViewModel(),
-    onSearchClick: () -> Unit,
-    onChampionClick: (String) -> Unit
+    onChampionClick: (String, String) -> Unit
 ) {
     val champions by viewModel.allChampions.observeAsState(emptyList())
     var searchQuery by remember { mutableStateOf("") }
@@ -169,7 +168,8 @@ fun ChampionListScreen(
                 else -> {
                     ChampIconList(
                         filteredList = filteredList,
-                        onFavoriteClick = { viewModel.toggleFavorite(it) }
+                        onFavoriteClick = { viewModel.toggleFavorite(it) },
+                        onChampionClick = onChampionClick
                     )
                 }
             }
@@ -181,7 +181,8 @@ fun ChampionListScreen(
 fun ChampIconList(
     filteredList: List<ChampionEntity>,
     modifier: Modifier = Modifier,
-    onFavoriteClick: (ChampionEntity) -> Unit
+    onFavoriteClick: (ChampionEntity) -> Unit,
+    onChampionClick: (String, String) -> Unit
 ) {
     val bottomPadding = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp + 32.dp
 
@@ -199,7 +200,10 @@ fun ChampIconList(
                             .size(110.dp)
                             .padding(8.dp)
                     ) {
-                        ChampionImage(champion)
+                        ChampionImage(
+                            champion = champion,
+                            onChampionClick = onChampionClick
+                        )
                         IconButton(
                             onClick = { onFavoriteClick(champion) },
                             modifier = Modifier

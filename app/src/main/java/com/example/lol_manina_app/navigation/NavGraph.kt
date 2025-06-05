@@ -18,8 +18,8 @@ fun NavGraph(
     ) {
         championListScreen(
             onSearchClick = { navController.navigate(NavRoutes.Search.route) },
-            onChampionClick = { championId ->
-                navController.navigate(NavRoutes.ChampionDetail.createRoute(championId))
+            onChampionClick = { championId, imageUrl ->
+                navController.navigate(NavRoutes.ChampionDetail.createRoute(championId, imageUrl))
             }
         )
         //searchScreen()
