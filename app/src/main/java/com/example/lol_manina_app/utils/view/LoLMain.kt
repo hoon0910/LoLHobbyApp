@@ -1,3 +1,4 @@
+
 package com.example.lol_manina_app.utils.view
 
 import android.os.Bundle
@@ -12,14 +13,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,24 +38,22 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.lol_manina_app.model.ChampionEntity
 import com.example.lol_manina_app.model.ChampionViewModel
 import com.example.lol_manina_app.model.SummonerViewModel
 import com.example.lol_manina_app.navigation.NavGraph
+import com.example.lol_manina_app.navigation.NavRoutes
 import com.example.lol_manina_app.ui.components.ChampionImage
+import com.example.lol_manina_app.ui.components.LoLAppBar
+import com.example.lol_manina_app.utils.constant.AppConstant.TAG
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class LoLMain : ComponentActivity() {
 
-    companion object { 
-        
-        const val TAG = "MyTag" 
-
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -69,17 +66,31 @@ class LoLMain : ComponentActivity() {
 @Composable
 fun MainCompose() {
     val navController = rememberNavController()
-    Log.d("khoon", "called MainCompose")
+    val currentBackStack by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStack?.destination?.route
 
-    NavGraph(
-        navController = navController,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
-                bottom = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp
-            )
-    )
+    Log.d(TAG, "called MainCompose")
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        LoLAppBar(
+            showBackButton = currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true,
+            onBackClick = { navController.popBackStack() },
+            title = if (currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true) {
+                "LOL DETAIL"
+            } else {
+                "LOL COMPOSE"
+            }
+        )
+        
+        NavGraph(
+            navController = navController,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    bottom = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp
+                )
+        )
+    }
 }
 
 @Composable
@@ -101,7 +112,6 @@ fun ChampionListScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(
-                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding(),
                 bottom = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp
             )
     ) {

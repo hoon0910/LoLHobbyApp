@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.room.runtime.android)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.animation)
+    implementation(libs.androidx.animation.graphics)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -89,5 +91,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose.v110)
     
     // Navigation Compose
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.animation)
+    implementation(libs.androidx.animation.core)
 }

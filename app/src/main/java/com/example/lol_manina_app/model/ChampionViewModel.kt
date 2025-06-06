@@ -1,7 +1,6 @@
 package com.example.lol_manina_app.model
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -17,8 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ChampionViewModel @Inject constructor(
     application: Application,
-    private val championRepository: ChampionRepository,
-    private val appPrefUtil: AppPrefUtil
+    private val championRepository: ChampionRepository
 ) : AndroidViewModel(application) {
     private val _result = MutableStateFlow<String>("")
     private val _championList = MutableStateFlow<List<String>>(emptyList())

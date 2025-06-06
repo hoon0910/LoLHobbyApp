@@ -1,5 +1,6 @@
 package com.example.lol_manina_app.navigation
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -9,6 +10,7 @@ import com.example.lol_manina_app.ui.components.ChampionDetailScreen
 import com.example.lol_manina_app.utils.view.ChampionListScreen
 import com.example.lol_manina_app.utils.view.SearchScreen
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 fun NavGraphBuilder.championListScreen(
     onSearchClick: () -> Unit,
     onChampionClick: (String, String) -> Unit
@@ -46,7 +48,7 @@ fun NavGraphBuilder.championDetailScreen(
         } ?: return@composable
         ChampionDetailScreen(
             name = championId,
-            imageUrl = imageUrl
+            imageUrl = imageUrl,
         )
     }
 } 

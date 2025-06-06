@@ -19,12 +19,13 @@ import com.example.lol_manina_app.model.ChampionEntity
 @Composable
 fun ChampionImage(
     champion: ChampionEntity,
-    onChampionClick: (String, String) -> Unit
+    onChampionClick: (String, String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val roundedCornerShape = RoundedCornerShape(16.dp)
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(2.dp)
             .clickable {

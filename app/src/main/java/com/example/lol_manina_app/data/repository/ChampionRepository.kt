@@ -101,10 +101,14 @@ class ChampionRepositoryImpl @Inject constructor(
                 val filePath = saveImageLocally(context, championName, version)
 
                 filePath?.let {
-                    val championEntity = ChampionEntity(
-                        name = championName,
-                        imagePath = it
-                    )
+                    val championEntity = if (existingChampion == null) {
+                        ChampionEntity(
+                            name = championName,
+                            imagePath = it
+                        )
+                    } else {
+                        existingChampion.copy(imagePath = it)
+                    }
                     if (existingChampion == null) {
                         championDao.insert(championEntity)
                         Log.d("khoon", "New champion image saved: $championName")

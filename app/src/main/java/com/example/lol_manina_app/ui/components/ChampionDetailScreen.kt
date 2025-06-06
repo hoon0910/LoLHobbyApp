@@ -7,14 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,8 +34,11 @@ import com.example.lol_manina_app.R
 import com.example.lol_manina_app.model.ChampionDetailViewModel
 
 @Composable
-fun ChampionDetailScreen(viewModel: ChampionDetailViewModel = hiltViewModel(),
-                         name: String, imageUrl: String?) {
+fun ChampionDetailScreen(
+    viewModel: ChampionDetailViewModel = hiltViewModel(),
+    name: String,
+    imageUrl: String?
+) {
     val detail = viewModel.championDetail.collectAsState().value
     LaunchedEffect(name) {
         viewModel.loadChampionJsonData(name)
@@ -45,8 +46,7 @@ fun ChampionDetailScreen(viewModel: ChampionDetailViewModel = hiltViewModel(),
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(WindowInsets.statusBars.asPaddingValues()),
+           .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Fixed top section with image and name in a frame
@@ -54,10 +54,8 @@ fun ChampionDetailScreen(viewModel: ChampionDetailViewModel = hiltViewModel(),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = Color(0xFF2B2B2B),
+                    color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(
-                        topStart = 20.dp,
-                        topEnd = 20.dp,
                         bottomStart = 20.dp,
                         bottomEnd = 20.dp
                     )
