@@ -19,7 +19,7 @@ import com.example.lol_manina_app.model.ChampionEntity
 @Composable
 fun ChampionImage(
     champion: ChampionEntity,
-    onChampionClick: (String, String) -> Unit,
+    onChampionClick: (String, String, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val roundedCornerShape = RoundedCornerShape(16.dp)
@@ -29,7 +29,7 @@ fun ChampionImage(
             .fillMaxWidth()
             .padding(2.dp)
             .clickable {
-                onChampionClick(champion.name, champion.imagePath ?: "")
+                onChampionClick(champion.name, champion.imagePath ?: "", champion.isFavorite)
             },
         shape = roundedCornerShape
     ) {

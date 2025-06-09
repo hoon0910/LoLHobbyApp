@@ -13,10 +13,10 @@ interface ChampionDao {
     suspend fun getChampionByName(name: String): ChampionEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(champion: ChampionEntity)
+    suspend fun insert(champion: ChampionEntity): Long
 
     @Update
-    suspend fun updateChampion(champion: ChampionEntity)
+    suspend fun updateChampion(champion: ChampionEntity): Int
 
     @Delete
     suspend fun deleteChampion(champion: ChampionEntity)

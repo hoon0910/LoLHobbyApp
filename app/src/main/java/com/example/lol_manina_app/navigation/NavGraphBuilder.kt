@@ -2,20 +2,17 @@ package com.example.lol_manina_app.navigation
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.example.lol_manina_app.ui.components.ChampionDetailScreen
-import com.example.lol_manina_app.utils.view.ChampionListScreen
-import com.example.lol_manina_app.utils.view.SearchScreen
+import com.example.lol_manina_app.ui.screens.ChampionDetailScreen
+import com.example.lol_manina_app.ui.screens.ChampionListScreen
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 fun NavGraphBuilder.championListScreen(
-    onSearchClick: () -> Unit,
-    onChampionClick: (String, String) -> Unit,
+    onChampionClick: (String, String, Boolean) -> Unit,
     sharedScope: SharedTransitionScope,
 ) {
     composable(NavRoutes.ChampionList.route) {
@@ -29,25 +26,18 @@ fun NavGraphBuilder.championListScreen(
     }
 }
 
-fun NavGraphBuilder.searchScreen() {
-    composable(NavRoutes.Search.route) {
-        SearchScreen(
-            viewModel = hiltViewModel(),
-            modifier = Modifier
-        )
-    }
-}
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 fun NavGraphBuilder.championDetailScreen(
-    onBackClick: () -> Unit,
     sharedScope: SharedTransitionScope,
     ) {
     composable(
         route = NavRoutes.ChampionDetail.route,
         arguments = listOf(
             navArgument("championId") { type = NavType.StringType },
-            navArgument("imageUrl") { type = NavType.StringType }
+            navArgument("imageUrl") { type = NavType.StringType },
+            navArgument("favorite") { type = NavType.BoolType }
+
         )
     ) { backStackEntry ->
         val animatedScope = this@composable
@@ -55,9 +45,11 @@ fun NavGraphBuilder.championDetailScreen(
         val imageUrl = backStackEntry.arguments?.getString("imageUrl")?.let { 
             NavRoutes.decodeUrl(it)
         } ?: return@composable
+        val favorite = backStackEntry.arguments!!.getBoolean("favorite")
         ChampionDetailScreen(
             name = championId,
             imageUrl = imageUrl,
+            favorite = favorite,
             animatedVisibilityScope = animatedScope,
             sharedTransitionScope = sharedScope
         )

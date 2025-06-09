@@ -22,15 +22,14 @@ fun NavGraph(
             modifier = modifier
         ) {
             championListScreen(
-                onSearchClick = { navController.navigate(NavRoutes.Search.route) },
-                onChampionClick = { championId, imageUrl ->
-                    navController.navigate(NavRoutes.ChampionDetail.createRoute(championId, imageUrl))
+                onChampionClick = { championId, imageUrl, favorite->
+                    navController.navigate(NavRoutes.ChampionDetail.createRoute(championId, imageUrl
+                    ,favorite))
                 },
                 sharedScope
             )
             //searchScreen()
             championDetailScreen(
-                onBackClick = { navController.popBackStack() },
                 sharedScope
             )
         }

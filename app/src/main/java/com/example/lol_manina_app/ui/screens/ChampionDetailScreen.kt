@@ -1,4 +1,4 @@
-package com.example.lol_manina_app.ui.components
+package com.example.lol_manina_app.ui.screens
 
 import android.util.Log
 import androidx.compose.animation.AnimatedContentScope
@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.lol_manina_app.R
 import com.example.lol_manina_app.model.ChampionDetailViewModel
+import com.example.lol_manina_app.ui.components.FavoriteButton
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -42,10 +43,13 @@ fun ChampionDetailScreen(
     viewModel: ChampionDetailViewModel = hiltViewModel(),
     name: String,
     imageUrl: String?,
+    favorite: Boolean,
     animatedVisibilityScope: AnimatedContentScope,
     sharedTransitionScope: SharedTransitionScope
 ) {
-    val detail = viewModel.championDetail.collectAsState().value
+    val championEntity = viewModel.championEntity.collectAsState().value
+    val detail = championEntity?.detail
+
     LaunchedEffect(name) {
         viewModel.loadChampionJsonData(name)
     }
@@ -67,12 +71,13 @@ fun ChampionDetailScreen(
                     )
                 )
                 .padding(vertical = 24.dp),
-            contentAlignment = Alignment.Center
+            // contentAlignment = Alignment.Center // 이 줄을 제거하거나 주석 처리합니다.
         ) {
             with(sharedTransitionScope) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
+                        .align(Alignment.Center) // 여기에 Alignment.Center를 추가합니다.
                         .sharedElement(
                             rememberSharedContentState(key = "champion_${name}"),
                             animatedVisibilityScope = animatedVisibilityScope
@@ -106,6 +111,18 @@ fun ChampionDetailScreen(
                         color = Color.White
                     )
                 }
+            }
+            
+            // Favorite button
+            Box(modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)) {
+                FavoriteButton(
+                    isFavorite = championEntity?.isFavorite ?: favorite,
+                    onClick = {
+                        championEntity?.let { entity ->
+                            viewModel.toggleFavorite(entity)
+                        }
+                    }
+                )
             }
         }
 

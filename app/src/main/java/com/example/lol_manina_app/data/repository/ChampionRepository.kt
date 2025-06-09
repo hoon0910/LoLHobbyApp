@@ -8,6 +8,7 @@ import com.example.lol_manina_app.data.db.ChampionDao
 import com.example.lol_manina_app.di.IoDispatcher
 import com.example.lol_manina_app.model.ChampionEntity
 import com.example.lol_manina_app.model.ChampionDetail
+import com.example.lol_manina_app.utils.constant.AppConstant.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -20,8 +21,9 @@ import javax.inject.Singleton
 
 interface ChampionRepository {
     fun getAllChampions(): Flow<List<ChampionEntity>>
-    suspend fun insertChampion(champion: ChampionEntity)
-    suspend fun updateChampion(champion: ChampionEntity)
+    suspend fun insertChampion(champion: ChampionEntity): ChampionEntity
+    suspend fun updateChampion(champion: ChampionEntity): Int
+    suspend fun getChampionByName(name: String): ChampionEntity?
     suspend fun fetchChampionData()
     suspend fun fetchChampionRotation(): List<String>
     suspend fun saveChampionImage(championName: String, version: String)
@@ -41,15 +43,28 @@ class ChampionRepositoryImpl @Inject constructor(
         return championDao.getAllChampions()
     }
 
-    override suspend fun insertChampion(champion: ChampionEntity) {
-        withContext(ioDispatcher) {
-            championDao.insert(champion)
+    override suspend fun insertChampion(champion: ChampionEntity): ChampionEntity {
+        return withContext(ioDispatcher) {
+            val id = championDao.insert(champion) // get ID.
+            val insertedChampion = champion.copy(id = id.toInt()) // Create New Id
+            Log.d(TAG, "Inserted champion: ${insertedChampion.name} with ID: ${insertedChampion.id}")
+            insertedChampion // return inserted champion Entity
         }
     }
 
-    override suspend fun updateChampion(champion: ChampionEntity) {
-        withContext(ioDispatcher) {
-            championDao.updateChampion(champion)
+    override suspend fun updateChampion(champion: ChampionEntity): Int {
+        return withContext(ioDispatcher) {
+            // update returns number of rows affected
+            val rowsAffected = championDao.updateChampion(champion)
+            Log.d(TAG, "Updated champion: ${champion.name} (ID: ${champion.id}) " +
+                    "with favorite: ${champion.isFavorite}. Rows affected: $rowsAffected")
+            rowsAffected //
+        }
+    }
+
+    override suspend fun getChampionByName(name: String): ChampionEntity? {
+        return withContext(ioDispatcher) {
+            championDao.getChampionByName(name)
         }
     }
 

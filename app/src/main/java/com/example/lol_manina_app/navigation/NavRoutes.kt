@@ -2,10 +2,9 @@ package com.example.lol_manina_app.navigation
 
 sealed class NavRoutes(val route: String) {
     object ChampionList : NavRoutes("champion_list")
-    object Search : NavRoutes("search")
-    object ChampionDetail : NavRoutes("champion_detail/{championId}/{imageUrl}") {
-        fun createRoute(championId: String, imageUrl: String) = 
-            "champion_detail/$championId/${encodeUrl(imageUrl)}"
+    object ChampionDetail : NavRoutes("champion_detail/{championId}/{imageUrl}/{favorite}") {
+        fun createRoute(championId: String, imageUrl: String, favorite: Boolean) =
+            "champion_detail/$championId/${encodeUrl(imageUrl)}/${favorite}"
     }
 
     companion object {
