@@ -15,6 +15,7 @@ fun NavGraph(
     startDestination: String = NavRoutes.ChampionList.route
 ) {
     SharedTransitionLayout {
+        val sharedScope = this
         NavHost(
             navController = navController,
             startDestination = startDestination,
@@ -24,11 +25,13 @@ fun NavGraph(
                 onSearchClick = { navController.navigate(NavRoutes.Search.route) },
                 onChampionClick = { championId, imageUrl ->
                     navController.navigate(NavRoutes.ChampionDetail.createRoute(championId, imageUrl))
-                }
+                },
+                sharedScope
             )
             //searchScreen()
             championDetailScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                sharedScope
             )
         }
     }

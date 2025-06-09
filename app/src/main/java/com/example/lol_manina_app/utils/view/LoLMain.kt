@@ -1,4 +1,3 @@
-
 package com.example.lol_manina_app.utils.view
 
 import android.os.Bundle
@@ -7,6 +6,9 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -93,10 +95,13 @@ fun MainCompose() {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChampionListScreen(
     viewModel: ChampionViewModel = hiltViewModel(),
-    onChampionClick: (String, String) -> Unit
+    onChampionClick: (String, String) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    sharedTransitionScope: SharedTransitionScope
 ) {
     val champions by viewModel.allChampions.observeAsState(emptyList())
     var searchQuery by remember { mutableStateOf("") }
@@ -179,20 +184,25 @@ fun ChampionListScreen(
                     ChampIconList(
                         filteredList = filteredList,
                         onFavoriteClick = { viewModel.toggleFavorite(it) },
-                        onChampionClick = onChampionClick
-                    )
+                        onChampionClick = onChampionClick,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope
+                        )
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChampIconList(
     filteredList: List<ChampionEntity>,
     modifier: Modifier = Modifier,
     onFavoriteClick: (ChampionEntity) -> Unit,
-    onChampionClick: (String, String) -> Unit
+    onChampionClick: (String, String) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    sharedTransitionScope: SharedTransitionScope
 ) {
     val bottomPadding = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp + 32.dp
 
@@ -210,23 +220,34 @@ fun ChampIconList(
                             .size(110.dp)
                             .padding(8.dp)
                     ) {
-                        ChampionImage(
-                            champion = champion,
-                            onChampionClick = onChampionClick
-                        )
-                        IconButton(
-                            onClick = { onFavoriteClick(champion) },
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                                .size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (champion.isFavorite) Icons.Default.Star
-                                else Icons.Default.StarBorder,
-                                tint = Color.Yellow,
-                                contentDescription = "Favorite"
+                        with(sharedTransitionScope) {
+                            ChampionImage(
+                                champion = champion,
+                                onChampionClick = onChampionClick,
+                                modifier = Modifier
+                                    .sharedElement(
+                                        rememberSharedContentState(key = "champion_${champion.name}"),
+                                        animatedVisibilityScope = animatedVisibilityScope
+                                    )
+                                    .sharedBounds(
+                                        rememberSharedContentState(key = "champion_bounds_${champion.name}"),
+                                        animatedVisibilityScope = animatedVisibilityScope
+                                    )
                             )
+                            IconButton(
+                                onClick = { onFavoriteClick(champion) },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp)
+                                    .size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (champion.isFavorite) Icons.Default.Star
+                                    else Icons.Default.StarBorder,
+                                    tint = Color.Yellow,
+                                    contentDescription = "Favorite"
+                                )
+                            }
                         }
                     }
                 }

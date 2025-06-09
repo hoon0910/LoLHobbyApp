@@ -35,7 +35,9 @@ fun ChampionImage(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(2.dp)
+            modifier = Modifier
+                .padding(4.dp)
+                .fillMaxWidth()
         ) {
             ChampionImageLoader(
                 imagePath = champion.imagePath,
@@ -47,7 +49,7 @@ fun ChampionImage(
                 text = champion.name,
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 2.dp)
+                modifier = Modifier.padding(vertical = 4.dp)
             )
         }
     }

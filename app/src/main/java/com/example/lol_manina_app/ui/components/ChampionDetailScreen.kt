@@ -1,6 +1,9 @@
 package com.example.lol_manina_app.ui.components
 
 import android.util.Log
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,11 +36,14 @@ import coil.compose.AsyncImage
 import com.example.lol_manina_app.R
 import com.example.lol_manina_app.model.ChampionDetailViewModel
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChampionDetailScreen(
     viewModel: ChampionDetailViewModel = hiltViewModel(),
     name: String,
-    imageUrl: String?
+    imageUrl: String?,
+    animatedVisibilityScope: AnimatedContentScope,
+    sharedTransitionScope: SharedTransitionScope
 ) {
     val detail = viewModel.championDetail.collectAsState().value
     LaunchedEffect(name) {
@@ -63,32 +69,43 @@ fun ChampionDetailScreen(
                 .padding(vertical = 24.dp),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (imageUrl != null) {
-                    AsyncImage(
-                        model = imageUrl,
-                        contentDescription = name,
-                        modifier = Modifier
-                            .size(200.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    )
-                } else {
-                    AsyncImage(
-                        model = R.drawable.no_image,
-                        contentDescription = name,
-                        modifier = Modifier
-                            .size(200.dp)
-                            .clip(RoundedCornerShape(12.dp))
+            with(sharedTransitionScope) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .sharedElement(
+                            rememberSharedContentState(key = "champion_${name}"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        .sharedBounds(
+                            rememberSharedContentState(key = "champion_bounds_${name}"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                ) {
+                    if (imageUrl != null) {
+                        AsyncImage(
+                            model = imageUrl,
+                            contentDescription = name,
+                            modifier = Modifier
+                                .size(200.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                        )
+                    } else {
+                        AsyncImage(
+                            model = R.drawable.no_image,
+                            contentDescription = name,
+                            modifier = Modifier
+                                .size(200.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Color.White
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White
-                )
             }
         }
 
