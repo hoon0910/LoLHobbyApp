@@ -4,12 +4,14 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.lol_manina_app.LoLApp.AppPrefUtil
 import com.example.lol_manina_app.data.repository.ChampionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,7 +23,27 @@ class ChampionViewModel @Inject constructor(
     private val _result = MutableStateFlow<String>("")
     private val _championList = MutableStateFlow<List<String>>(emptyList())
     private val _championMap = MutableStateFlow<Map<Int, String>>(emptyMap())
+
+    // Existing allChampions LiveData
     val allChampions: LiveData<List<ChampionEntity>> = championRepository.getAllChampions().asLiveData()
+
+    // New state for search query and favorite filter
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _showOnlyFavorites = MutableStateFlow(false)
+    val showOnlyFavorites: StateFlow<Boolean> = _showOnlyFavorites
+
+    // Combined flow for filtered list
+    val filteredChampions: LiveData<List<ChampionEntity>> = combine(
+        allChampions.asFlow(), // Convert LiveData to Flow to use combine
+        _searchQuery,
+        _showOnlyFavorites
+    ) { champions, query, onlyFavorites ->
+        champions
+            .filter { it.name.contains(query, ignoreCase = true) }
+            .filter { !onlyFavorites || it.isFavorite }
+    }.asLiveData()
 
     init {
         fetchChampionData()
@@ -30,13 +52,20 @@ class ChampionViewModel @Inject constructor(
     private fun fetchChampionData() {
         viewModelScope.launch {
             try {
-
                 championRepository.fetchChampionData()
             } catch (e: Exception) {
                 println("Error fetching champion data: ${e.message}")
                 Log.e("khoon", e.message.toString())
             }
         }
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun toggleShowOnlyFavorites() {
+        _showOnlyFavorites.value = !_showOnlyFavorites.value
     }
 
     fun addOrUpdateChampion(id: Int, name: String) {

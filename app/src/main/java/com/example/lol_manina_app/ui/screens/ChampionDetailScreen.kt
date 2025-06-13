@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,7 @@ import coil.compose.AsyncImage
 import com.example.lol_manina_app.R
 import com.example.lol_manina_app.model.ChampionDetailViewModel
 import com.example.lol_manina_app.ui.components.FavoriteButton
+import com.example.lol_manina_app.ui.components.StatProgressBar
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -71,13 +73,12 @@ fun ChampionDetailScreen(
                     )
                 )
                 .padding(vertical = 24.dp),
-            // contentAlignment = Alignment.Center // 이 줄을 제거하거나 주석 처리합니다.
         ) {
             with(sharedTransitionScope) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .align(Alignment.Center) // 여기에 Alignment.Center를 추가합니다.
+                        .align(Alignment.Center)
                         .sharedElement(
                             rememberSharedContentState(key = "champion_${name}"),
                             animatedVisibilityScope = animatedVisibilityScope
@@ -114,15 +115,30 @@ fun ChampionDetailScreen(
             }
             
             // Favorite button
-            Box(modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)) {
-                FavoriteButton(
-                    isFavorite = championEntity?.isFavorite ?: favorite,
-                    onClick = {
-                        championEntity?.let { entity ->
-                            viewModel.toggleFavorite(entity)
-                        }
-                    }
-                )
+            with(sharedTransitionScope) {
+                Box(modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .sharedElement(
+                        rememberSharedContentState(key = "favorite_button_${name}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .sharedBounds(
+                        rememberSharedContentState(key = "favorite_button_bounds_${name}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                ) {
+                    FavoriteButton(
+                        isFavorite = championEntity?.isFavorite ?: favorite,
+                        onClick = {
+                            championEntity?.let { entity ->
+                                viewModel.toggleFavorite(entity)
+                            }
+                        },
+                        modifier = Modifier.size(70.dp).padding(4.dp),
+                        iconSize = 60.dp
+                    )
+                }
             }
         }
 
@@ -139,6 +155,110 @@ fun ChampionDetailScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
+            
+            // Stats section at the top
+            Text("Stats", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Difficulty",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 20.sp
+                    )
+                    Text(
+                        "${detail?.info?.difficulty ?: 0}/10",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 20.sp,
+                        color = Color(0xFFE91E63)
+                    )
+                }
+                StatProgressBar(
+                    progress = (detail?.info?.difficulty ?: 0) / 10f,
+                    color = Color(0xFFE91E63),
+                    label = ""
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Attack",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 20.sp
+                    )
+                    Text(
+                        "${detail?.info?.attack ?: 0}/10",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 20.sp,
+                        color = Color(0xFFF44336)
+                    )
+                }
+                StatProgressBar(
+                    progress = (detail?.info?.attack ?: 0) / 10f,
+                    color = Color(0xFFF44336),
+                    label = ""
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Magic",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 20.sp
+                    )
+                    Text(
+                        "${detail?.info?.magic ?: 0}/10",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 20.sp,
+                        color = Color(0xFF2196F3)
+                    )
+                }
+                StatProgressBar(
+                    progress = (detail?.info?.magic ?: 0) / 10f,
+                    color = Color(0xFF2196F3),
+                    label = ""
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Defence",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 20.sp
+                    )
+                    Text(
+                        "${detail?.info?.defense ?: 0}/10",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 20.sp,
+                        color = Color(0xFF4CAF50)
+                    )
+                }
+                StatProgressBar(
+                    progress = (detail?.info?.defense ?: 0) / 10f,
+                    color = Color(0xFF4CAF50),
+                    label = ""
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+            
             detail?.let {
                 Log.d("khoon", "Rendering champion detail for $name")
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -151,45 +271,11 @@ fun ChampionDetailScreen(
                 Text("Loading...")
             }
 
-            Text("Difficulty: ${detail?.info?.difficulty?:0}/10", fontSize = 20.sp)
-            SegmentedBarGauge(detail?.info?.difficulty ?:0)
-            Spacer(modifier = Modifier.height(10.dp))
-            Text("Attack: ${detail?.info?.attack?:0}/10", fontSize = 20.sp)
-            SegmentedBarGauge(detail?.info?.attack ?:0)
-            Spacer(modifier = Modifier.height(10.dp))
-            Text("Magic: ${detail?.info?.magic?:0}/10", fontSize = 20.sp)
-            SegmentedBarGauge(detail?.info?.magic ?:0)
-            Spacer(modifier = Modifier.height(10.dp))
-            Text("Defence: ${detail?.info?.defense?:0}/10", fontSize = 20.sp)
-            SegmentedBarGauge(detail?.info?.defense ?:0)
-
             Spacer(modifier = Modifier.height(20.dp))
             detail?.passive?.let { passive ->
                 Text("Passive: ${passive.name}", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(passive.description, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 16.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun SegmentedBarGauge(difficulty: Int, max: Int = 10) {
-
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(top = 8.dp, start = 16.dp)) {
-        Row {
-            repeat(max) { index ->
-                Box(
-                    modifier = Modifier
-                        .size(24.dp, 40.dp)
-                        .padding(1.dp)
-                        .background(
-                            color = if (index < difficulty) Color.Red else Color.Blue,
-                            shape = RoundedCornerShape(5.dp)
-                        )
-                )
             }
         }
     }
