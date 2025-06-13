@@ -45,11 +45,9 @@ fun NavGraphBuilder.championDetailScreen(
         val imageUrl = backStackEntry.arguments?.getString("imageUrl")?.let { 
             NavRoutes.decodeUrl(it)
         } ?: return@composable
-        val favorite = backStackEntry.arguments!!.getBoolean("favorite")
         ChampionDetailScreen(
             name = championId,
             imageUrl = imageUrl,
-            favorite = favorite,
             animatedVisibilityScope = animatedScope,
             sharedTransitionScope = sharedScope
         )
