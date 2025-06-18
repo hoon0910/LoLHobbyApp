@@ -61,7 +61,6 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.room.runtime.android)
     implementation(libs.androidx.runtime.livedata)
-    // implementation("androidx.compose.runtime:runtime-livedata:1.6.7")
     implementation(libs.androidx.animation)
     implementation(libs.androidx.animation.graphics)
     testImplementation(libs.junit)

@@ -3,15 +3,14 @@ package com.example.lol_manina_app.model
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.asFlow
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.lol_manina_app.data.repository.ChampionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,12 +19,11 @@ class ChampionViewModel @Inject constructor(
     application: Application,
     private val championRepository: ChampionRepository
 ) : AndroidViewModel(application) {
-    private val _result = MutableStateFlow<String>("")
     private val _championList = MutableStateFlow<List<String>>(emptyList())
     private val _championMap = MutableStateFlow<Map<Int, String>>(emptyMap())
 
-    // Existing allChampions LiveData
-    val allChampions: LiveData<List<ChampionEntity>> = championRepository.getAllChampions().asLiveData()
+    private val _allChampions = MutableStateFlow<List<ChampionEntity>>(emptyList())
+    val allChampions: StateFlow<List<ChampionEntity>> = _allChampions
 
     // New state for search query and favorite filter
     private val _searchQuery = MutableStateFlow("")
@@ -35,18 +33,29 @@ class ChampionViewModel @Inject constructor(
     val showOnlyFavorites: StateFlow<Boolean> = _showOnlyFavorites
 
     // Combined flow for filtered list
-    val filteredChampions: LiveData<List<ChampionEntity>> = combine(
-        allChampions.asFlow(), // Convert LiveData to Flow to use combine
+    val filteredChampions: StateFlow<List<ChampionEntity>> =
+        combine<List<ChampionEntity>, String, Boolean, List<ChampionEntity>>(
+        allChampions,
         _searchQuery,
         _showOnlyFavorites
     ) { champions, query, onlyFavorites ->
         champions
             .filter { it.name.contains(query, ignoreCase = true) }
             .filter { !onlyFavorites || it.isFavorite }
-    }.asLiveData()
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     init {
         fetchChampionData()
+        // Collect the Flow from repository
+        viewModelScope.launch {
+            championRepository.getAllChampions().collect { champions ->
+                _allChampions.value = champions
+            }
+        }
     }
 
     private fun fetchChampionData() {

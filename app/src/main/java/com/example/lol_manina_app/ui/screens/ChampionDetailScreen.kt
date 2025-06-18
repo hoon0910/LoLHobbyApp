@@ -56,20 +56,22 @@ fun ChampionDetailScreen(
                         animatedVisibilityScope = animatedVisibilityScope
                     )
             ) {
-                if (imageUrl != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f/9f)
+                ) {
                     AsyncImage(
-                        model = "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${name}_0.jpg",
+                        model = if (imageUrl != null) {
+                            "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${name}_0.jpg"
+                        } else {
+                            R.drawable.no_image
+                        },
                         contentDescription = name,
-                        modifier = Modifier.fillMaxWidth(),
-                        contentScale = ContentScale.FillWidth,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
                         error = painterResource(id = R.drawable.no_image),
                         placeholder = painterResource(id = R.drawable.no_image)
-                    )
-                } else {
-                    AsyncImage(
-                        model = R.drawable.no_image,
-                        contentDescription = name,
-                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

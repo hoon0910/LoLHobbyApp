@@ -8,11 +8,11 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -32,10 +32,9 @@ fun ChampionListScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     sharedTransitionScope: SharedTransitionScope
 ) {
-    val champions by viewModel.allChampions.observeAsState(emptyList())
+    val champions by viewModel.filteredChampions.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val showOnlyFavorites by viewModel.showOnlyFavorites.collectAsState()
-    val filteredList by viewModel.filteredChampions.observeAsState(emptyList())
 
     Log.d("khoon", "initScreen")
 
@@ -119,12 +118,9 @@ fun ChampionListScreen(
                 champions.isEmpty() && searchQuery.isBlank() -> {
                     Text("No data")
                 }
-                filteredList.isEmpty() -> {
-                    Text("No result data")
-                }
                 else -> {
                     ChampIconList(
-                        filteredList = filteredList,
+                        filteredList = champions,
                         onFavoriteClick = { viewModel.toggleFavorite(it) },
                         onChampionClick = onChampionClick,
                         sharedTransitionScope = sharedTransitionScope,
@@ -136,7 +132,7 @@ fun ChampionListScreen(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ChampIconList(
     filteredList: List<ChampionEntity>,
@@ -147,59 +143,21 @@ fun ChampIconList(
     sharedTransitionScope: SharedTransitionScope
 ) {
     val bottomPadding = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp + 32.dp
+    val state = rememberLazyListState()
 
-    LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(bottom = bottomPadding)
-    ) {
-        items(filteredList.chunked(2)) { rowItems ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                if (rowItems.size == 1) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .padding(4.dp)
-                    ) {
-                        with(sharedTransitionScope) {
-                            ChampionImage(
-                                champion = rowItems[0],
-                                onChampionClick = onChampionClick,
-                                modifier = Modifier
-                                    .sharedElement(
-                                        rememberSharedContentState(key = "champion_${rowItems[0].name}"),
-                                        animatedVisibilityScope = animatedVisibilityScope
-                                    )
-                                    .sharedBounds(
-                                        rememberSharedContentState(key = "champion_bounds_${rowItems[0].name}"),
-                                        animatedVisibilityScope = animatedVisibilityScope
-                                    )
-                            )
-                            FavoriteButton(
-                                isFavorite = rowItems[0].isFavorite,
-                                onClick = { onFavoriteClick(rowItems[0])},
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .offset(x = 4.dp, y = (-4).dp)
-                                    .sharedElement(
-                                        rememberSharedContentState(key = "favorite_button_${rowItems[0].name}"),
-                                        animatedVisibilityScope = animatedVisibilityScope
-                                    )
-                                    .sharedBounds(
-                                        rememberSharedContentState(key = "favorite_button_bounds_${rowItems[0].name}"),
-                                        animatedVisibilityScope = animatedVisibilityScope
-                                    )
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
-                } else {
-                    rowItems.forEach { champion ->
+    Box(modifier = modifier.fillMaxWidth()) {
+        LazyColumn(
+            state = state,
+            contentPadding = PaddingValues(bottom = bottomPadding)
+        ) {
+            items(filteredList.chunked(2)) { rowItems ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    if (rowItems.size == 1) {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -208,33 +166,73 @@ fun ChampIconList(
                         ) {
                             with(sharedTransitionScope) {
                                 ChampionImage(
-                                    champion = champion,
+                                    champion = rowItems[0],
                                     onChampionClick = onChampionClick,
                                     modifier = Modifier
                                         .sharedElement(
-                                            rememberSharedContentState(key = "champion_${champion.name}"),
+                                            rememberSharedContentState(key = "champion_${rowItems[0].name}"),
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                         .sharedBounds(
-                                            rememberSharedContentState(key = "champion_bounds_${champion.name}"),
+                                            rememberSharedContentState(key = "champion_bounds_${rowItems[0].name}"),
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                 )
                                 FavoriteButton(
-                                    isFavorite = champion.isFavorite,
-                                    onClick = { onFavoriteClick(champion)},
+                                    isFavorite = rowItems[0].isFavorite,
+                                    onClick = { onFavoriteClick(rowItems[0])},
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
-                                        .offset(x = 4.dp, y = (-4).dp)
                                         .sharedElement(
-                                            rememberSharedContentState(key = "favorite_button_${champion.name}"),
+                                            rememberSharedContentState(key = "favorite_button_${rowItems[0].name}"),
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                         .sharedBounds(
-                                            rememberSharedContentState(key = "favorite_button_bounds_${champion.name}"),
+                                            rememberSharedContentState(key = "favorite_button_bounds_${rowItems[0].name}"),
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                 )
+                            }
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                    } else {
+                        rowItems.forEach { champion ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .aspectRatio(1f)
+                                    .padding(4.dp)
+                            ) {
+                                with(sharedTransitionScope) {
+                                    ChampionImage(
+                                        champion = champion,
+                                        onChampionClick = onChampionClick,
+                                        modifier = Modifier
+                                            .sharedElement(
+                                                rememberSharedContentState(key = "champion_${champion.name}"),
+                                                animatedVisibilityScope = animatedVisibilityScope
+                                            )
+                                            .sharedBounds(
+                                                rememberSharedContentState(key = "champion_bounds_${champion.name}"),
+                                                animatedVisibilityScope = animatedVisibilityScope
+                                            )
+                                    )
+                                    FavoriteButton(
+                                        isFavorite = champion.isFavorite,
+                                        onClick = { onFavoriteClick(champion)},
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .offset(x = 4.dp, y = (-4).dp)
+                                            .sharedElement(
+                                                rememberSharedContentState(key = "favorite_button_${champion.name}"),
+                                                animatedVisibilityScope = animatedVisibilityScope
+                                            )
+                                            .sharedBounds(
+                                                rememberSharedContentState(key = "favorite_button_bounds_${champion.name}"),
+                                                animatedVisibilityScope = animatedVisibilityScope
+                                            )
+                                    )
+                                }
                             }
                         }
                     }
