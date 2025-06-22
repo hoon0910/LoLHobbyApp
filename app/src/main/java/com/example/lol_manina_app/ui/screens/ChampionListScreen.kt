@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -144,19 +145,25 @@ fun ChampIconList(
 ) {
     val bottomPadding = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp + 32.dp
     val state = rememberLazyListState()
+    
+    // Detect screen orientation and determine grid columns
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val columnsPerRow = if (isLandscape) 4 else 2
 
     Box(modifier = modifier.fillMaxWidth()) {
         LazyColumn(
             state = state,
             contentPadding = PaddingValues(bottom = bottomPadding)
         ) {
-            items(filteredList.chunked(2)) { rowItems ->
+            items(filteredList.chunked(columnsPerRow)) { rowItems ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    // Handle case where row has fewer items than columnsPerRow
                     if (rowItems.size == 1) {
                         Box(
                             modifier = Modifier
@@ -194,7 +201,10 @@ fun ChampIconList(
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.weight(1f))
+                        // Add spacers for remaining columns
+                        repeat(columnsPerRow - 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     } else {
                         rowItems.forEach { champion ->
                             Box(
@@ -234,6 +244,10 @@ fun ChampIconList(
                                     )
                                 }
                             }
+                        }
+                        // Add spacers if row has fewer items than columnsPerRow
+                        repeat(columnsPerRow - rowItems.size) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
