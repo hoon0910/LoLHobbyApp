@@ -19,8 +19,6 @@ class ChampionViewModel @Inject constructor(
     application: Application,
     private val championRepository: ChampionRepository
 ) : AndroidViewModel(application) {
-    private val _championList = MutableStateFlow<List<String>>(emptyList())
-    private val _championMap = MutableStateFlow<Map<Int, String>>(emptyMap())
 
     private val _allChampions = MutableStateFlow<List<ChampionEntity>>(emptyList())
     val allChampions: StateFlow<List<ChampionEntity>> = _allChampions
@@ -32,15 +30,29 @@ class ChampionViewModel @Inject constructor(
     private val _showOnlyFavorites = MutableStateFlow(false)
     val showOnlyFavorites: StateFlow<Boolean> = _showOnlyFavorites
 
+    // Add state for search mode
+    private val _isSearchMode = MutableStateFlow(false)
+    val isSearchMode: StateFlow<Boolean> = _isSearchMode
+
     // Combined flow for filtered list
     val filteredChampions: StateFlow<List<ChampionEntity>> =
-        combine<List<ChampionEntity>, String, Boolean, List<ChampionEntity>>(
+        combine<List<ChampionEntity>, String, Boolean, Boolean, List<ChampionEntity>>(
         allChampions,
         _searchQuery,
-        _showOnlyFavorites
-    ) { champions, query, onlyFavorites ->
+        _showOnlyFavorites,
+        _isSearchMode
+    ) { champions, query, onlyFavorites, isSearchMode ->
         champions
-            .filter { it.name.contains(query, ignoreCase = true) }
+            .filter { 
+                // When in search mode, return an empty list for a blank query
+                if (isSearchMode && query.isBlank()) {
+                    false
+                } else if (query.isNotBlank()) {
+                    it.name.contains(query, ignoreCase = true)
+                } else {
+                    true // Otherwise, show all champions
+                }
+            }
             .filter { !onlyFavorites || it.isFavorite }
     }.stateIn(
         scope = viewModelScope,
@@ -73,28 +85,12 @@ class ChampionViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
+    fun setSearchMode(isSearchMode: Boolean) {
+        _isSearchMode.value = isSearchMode
+    }
+
     fun toggleShowOnlyFavorites() {
         _showOnlyFavorites.value = !_showOnlyFavorites.value
-    }
-
-    fun addOrUpdateChampion(id: Int, name: String) {
-        Log.d("khoon", "addOrUpdateChampion : " + name)
-        _championMap.value = _championMap.value.toMutableMap().apply {
-            this[id] = name
-        }
-    }
-
-    fun fetchChampionRotation() {
-        viewModelScope.launch {
-            try {
-                val champions = championRepository.fetchChampionRotation()
-                _championList.value = champions
-                Log.d("khoon", "fetchChampionRotation Success :  " + _championList.value)
-            } catch (e: Exception) {
-                _championList.value = listOf("Network error: ${e.message}")
-                Log.d("khoon", "fetchChampionRotation exception")
-            }
-        }
     }
 
     fun toggleFavorite(champion: ChampionEntity) = viewModelScope.launch {
