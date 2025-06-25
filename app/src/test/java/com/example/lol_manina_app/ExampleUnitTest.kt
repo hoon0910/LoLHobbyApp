@@ -1,4 +1,4 @@
-package com.example.lol_manina_app
+package com.khoon.lol.info
 
 import org.junit.Test
 

@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.lol_manina_app"
+    namespace = "com.khoon.lol.info"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.lol_manina_app"
+        applicationId = "com.khoon.lol.info"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
