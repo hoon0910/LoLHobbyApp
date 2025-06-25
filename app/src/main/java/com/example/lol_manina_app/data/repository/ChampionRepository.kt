@@ -79,37 +79,37 @@ class ChampionRepositoryImpl @Inject constructor(
                     val championResponse = dataDragonApiService.getChampionData(version)
                     if (championResponse.isSuccessful) {
                         val champions = championResponse.body()?.data
-                        champions?.forEach { (championName, info) ->
+                        champions?.forEach { (championName) ->
                             // Check if champion already exists in DB
                             val existingChampion = championDao.getChampionByName(championName)
                             
                             // Fetch champion detail
                             try {
-                                val detailResponse = dataDragonApiService.getChampionDetail(version, championName)
+                                val detailResponse = dataDragonApiService
+                                    .getChampionDetail(version, championName)
                                 val championDetail = detailResponse.data[championName]
                                 
                                 // Fetch image path
-                                val imagePath = if (existingChampion == null || existingChampion.imagePath == null) {
+                                val imagePath = if (existingChampion == null
+                                    || existingChampion.imagePath == null) {
                                     saveImageLocally(context, championName, version)
                                 } else {
                                     existingChampion.imagePath
                                 }
                                 
                                 if (championDetail != null) {
-                                    val championToSave = if (existingChampion != null) {
-                                        // Update existing champion with detail and image
-                                        existingChampion.copy(
-                                            detail = championDetail,
-                                            imagePath = imagePath ?: existingChampion.imagePath
-                                        )
-                                    } else {
-                                        // Create new champion with detail and image
+                                    // Update existing champion with detail and image
+                                    val championToSave = existingChampion?.
+                                    copy(
+                                        detail = championDetail,
+                                        imagePath = imagePath ?: existingChampion.imagePath
+                                    )
+                                        ?: // Create new champion with detail and image
                                         ChampionEntity(
                                             name = championName,
                                             imagePath = imagePath,
                                             detail = championDetail
                                         )
-                                    }
                                     
                                     if (existingChampion != null) {
                                         championDao.updateChampion(championToSave)
