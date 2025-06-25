@@ -3,8 +3,6 @@ package com.example.lol_manina_app.ui.components
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -16,10 +14,16 @@ fun ChampionListHeaderBarSearchMode(
     onSearchModeChange: (Boolean) -> Unit,
     showOnlyFavorites: Boolean,
     onToggleFavorites: () -> Unit,
+    allTags: List<String> = emptyList(),
+    selectedTags: Set<String> = emptySet(),
+    onTagSelected: (String) -> Unit = {}
 ) {
     BaseHeaderLayout(
         showOnlyFavorites = showOnlyFavorites,
         onToggleFavorites = onToggleFavorites,
+        allTags = allTags,
+        selectedTags = selectedTags,
+        onTagSelected = onTagSelected,
         leftContent = {
             // This is the specific content for the search mode
             CustomSearchBar(
@@ -29,15 +33,14 @@ fun ChampionListHeaderBarSearchMode(
                     .weight(1f)
                     .padding(4.dp)
             )
-            IconButton(
+            GradientIconButton(
                 onClick = {
                     onSearchQueryChange("")
                     onSearchModeChange(false)
                 },
-                modifier = Modifier
-            ) {
-                Icon(Icons.Default.Close, contentDescription = "Close Search")
-            }
+                icon = Icons.Default.Close,
+                contentDescription = "Close Search"
+            )
         }
     )
 } 

@@ -70,20 +70,73 @@ class ChampionRepositoryImpl @Inject constructor(
 
     override suspend fun fetchChampionData() {
         withContext(ioDispatcher) {
-            val versionResponse = dataDragonApiService.getVersions()
-            if (versionResponse.isSuccessful) {
-                val version = versionResponse.body()?.firstOrNull() ?: "13.9.1"
-                val championResponse = dataDragonApiService.getChampionData(version)
-                if (championResponse.isSuccessful) {
-                    val champions = championResponse.body()?.data
-                    champions?.forEach { (_, info) ->
-                        // Check if champion already exists in DB before saving
-                        val existingChampion = championDao.getChampionByName(info.id)
-                        if (existingChampion == null) {
-                            saveChampionImage(info.id, version)
+            try {
+                val versionResponse = dataDragonApiService.getVersions()
+                if (versionResponse.isSuccessful) {
+                    val version = versionResponse.body()?.firstOrNull() ?: "13.9.1"
+                    
+                    // Fetch champion list
+                    val championResponse = dataDragonApiService.getChampionData(version)
+                    if (championResponse.isSuccessful) {
+                        val champions = championResponse.body()?.data
+                        champions?.forEach { (championName, info) ->
+                            // Check if champion already exists in DB
+                            val existingChampion = championDao.getChampionByName(championName)
+                            
+                            // Fetch champion detail
+                            try {
+                                val detailResponse = dataDragonApiService.getChampionDetail(version, championName)
+                                val championDetail = detailResponse.data[championName]
+                                
+                                // Fetch image path
+                                val imagePath = if (existingChampion == null || existingChampion.imagePath == null) {
+                                    saveImageLocally(context, championName, version)
+                                } else {
+                                    existingChampion.imagePath
+                                }
+                                
+                                if (championDetail != null) {
+                                    val championToSave = if (existingChampion != null) {
+                                        // Update existing champion with detail and image
+                                        existingChampion.copy(
+                                            detail = championDetail,
+                                            imagePath = imagePath ?: existingChampion.imagePath
+                                        )
+                                    } else {
+                                        // Create new champion with detail and image
+                                        ChampionEntity(
+                                            name = championName,
+                                            imagePath = imagePath,
+                                            detail = championDetail
+                                        )
+                                    }
+                                    
+                                    if (existingChampion != null) {
+                                        championDao.updateChampion(championToSave)
+                                        Log.d(TAG, "Updated champion with detail: $championName")
+                                    } else {
+                                        championDao.insert(championToSave)
+                                        Log.d(TAG, "Created new champion with detail: $championName")
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to fetch detail for $championName: ${e.message}")
+                                // If detail fetch fails, still save basic champion info and image
+                                if (existingChampion == null) {
+                                    val imagePath = saveImageLocally(context, championName, version)
+                                    val basicChampion = ChampionEntity(
+                                        name = championName,
+                                        imagePath = imagePath
+                                    )
+                                    championDao.insert(basicChampion)
+                                    Log.d(TAG, "Created basic champion (no detail): $championName")
+                                }
+                            }
                         }
                     }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching champion data: ${e.message}")
             }
         }
     }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,14 +35,23 @@ class ChampionViewModel @Inject constructor(
     private val _isSearchMode = MutableStateFlow(false)
     val isSearchMode: StateFlow<Boolean> = _isSearchMode
 
+    // Add state for tag filtering
+    private val _selectedTags = MutableStateFlow<Set<String>>(emptySet())
+    val selectedTags: StateFlow<Set<String>> = _selectedTags
+
+    // Separate state for all available tags
+    private val _allAvailableTags = MutableStateFlow<Set<String>>(emptySet())
+    val allAvailableTags: StateFlow<Set<String>> = _allAvailableTags
+
     // Combined flow for filtered list
     val filteredChampions: StateFlow<List<ChampionEntity>> =
-        combine<List<ChampionEntity>, String, Boolean, Boolean, List<ChampionEntity>>(
+        combine<List<ChampionEntity>, String, Boolean, Boolean, Set<String>, List<ChampionEntity>>(
         allChampions,
         _searchQuery,
         _showOnlyFavorites,
-        _isSearchMode
-    ) { champions, query, onlyFavorites, isSearchMode ->
+        _isSearchMode,
+        _selectedTags
+    ) { champions, query, onlyFavorites, isSearchMode, selectedTags ->
         champions
             .filter { 
                 // When in search mode, return an empty list for a blank query
@@ -54,6 +64,15 @@ class ChampionViewModel @Inject constructor(
                 }
             }
             .filter { !onlyFavorites || it.isFavorite }
+            .filter { champion ->
+                // Filter by selected tags
+                if (selectedTags.isEmpty()) {
+                    true // Show all if no tags selected
+                } else {
+                    val championTags = champion.detail?.tags ?: emptyList()
+                    selectedTags.any { tag -> championTags.contains(tag) }
+                }
+            }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -66,6 +85,12 @@ class ChampionViewModel @Inject constructor(
         viewModelScope.launch {
             championRepository.getAllChampions().collect { champions ->
                 _allChampions.value = champions
+                // Extract all available tags from all champions
+                val allTags = champions.flatMap { champion ->
+                    champion.detail?.tags ?: emptyList()
+                }.toSet()
+                _allAvailableTags.value = allTags
+                Log.d("ChampionViewModel", "Loaded ${champions.size} champions with ${allTags.size} unique tags: $allTags")
             }
         }
     }
@@ -91,6 +116,20 @@ class ChampionViewModel @Inject constructor(
 
     fun toggleShowOnlyFavorites() {
         _showOnlyFavorites.value = !_showOnlyFavorites.value
+    }
+
+    fun toggleTag(tag: String) {
+        val currentTags = _selectedTags.value.toMutableSet()
+        if (currentTags.contains(tag)) {
+            currentTags.remove(tag)
+        } else {
+            currentTags.add(tag)
+        }
+        _selectedTags.value = currentTags
+    }
+
+    fun clearAllTags() {
+        _selectedTags.value = emptySet()
     }
 
     fun toggleFavorite(champion: ChampionEntity) = viewModelScope.launch {

@@ -10,6 +10,9 @@ fun ChampionListHeaderBar(
     onSearchModeChange: (Boolean) -> Unit,
     showOnlyFavorites: Boolean,
     onToggleFavorites: () -> Unit,
+    allTags: List<String> = emptyList(),
+    selectedTags: Set<String> = emptySet(),
+    onTagSelected: (String) -> Unit = {}
 ) {
     if (isSearchMode) {
         ChampionListHeaderBarSearchMode(
@@ -17,14 +20,20 @@ fun ChampionListHeaderBar(
             onSearchQueryChange = onSearchQueryChange,
             onSearchModeChange = onSearchModeChange,
             showOnlyFavorites = showOnlyFavorites,
-            onToggleFavorites = onToggleFavorites
+            onToggleFavorites = onToggleFavorites,
+            allTags = allTags,
+            selectedTags = selectedTags,
+            onTagSelected = onTagSelected
         )
     } else {
         ChampionListHeaderBarNormalMode(
             onSearchModeChange = onSearchModeChange,
             onSearchQueryChange = onSearchQueryChange,
             showOnlyFavorites = showOnlyFavorites,
-            onToggleFavorites = onToggleFavorites
+            onToggleFavorites = onToggleFavorites,
+            allTags = allTags,
+            selectedTags = selectedTags,
+            onTagSelected = onTagSelected
         )
     }
 } 

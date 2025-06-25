@@ -34,14 +34,18 @@ fun ChampionListScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val showOnlyFavorites by viewModel.showOnlyFavorites.collectAsState()
     val isSearchMode by viewModel.isSearchMode.collectAsState()
+    val allTags by viewModel.allAvailableTags.collectAsState()
+    val selectedTags by viewModel.selectedTags.collectAsState()
 
     var showHeader by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
-    val nestedScrollConnection = remember { PullDownHeaderScrollConnection(listState) {
-        showHeader = it }
+    val nestedScrollConnection = remember {
+        PullDownHeaderScrollConnection(listState) {
+            showHeader = it
+        }
     }
-    val headerHeight = if (showHeader) 60.dp else 0.dp
+    val headerHeight = if (showHeader) 120.dp else 0.dp // Increased height to accommodate tag chips
 
     Box(
         modifier = Modifier
@@ -65,8 +69,11 @@ fun ChampionListScreen(
                 onSearchQueryChange = { viewModel.setSearchQuery(it) },
                 onSearchModeChange = { viewModel.setSearchMode(it) },
                 showOnlyFavorites = showOnlyFavorites,
-                onToggleFavorites = { viewModel.toggleShowOnlyFavorites() }
+                onToggleFavorites = { viewModel.toggleShowOnlyFavorites() },
+                allTags = allTags.toList(),
+                selectedTags = selectedTags,
+                onTagSelected = { viewModel.toggleTag(it) }
             )
         }
     }
-}
+} 
