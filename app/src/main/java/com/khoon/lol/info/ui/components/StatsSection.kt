@@ -1,4 +1,4 @@
-package com.example.lol_manina_app.ui.components
+package com.khoon.lol.info.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.khoon.lol.info.model.ChampionDetail
-import com.khoon.lol.info.ui.components.CircularStatItem
 
 @Composable
 fun StatsSection(

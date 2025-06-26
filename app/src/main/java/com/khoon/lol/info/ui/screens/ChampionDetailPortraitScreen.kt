@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.lol_manina_app.ui.components.StatsSection
 import com.khoon.lol.info.R
 import com.khoon.lol.info.model.ChampionDetail
 import com.khoon.lol.info.ui.components.*
