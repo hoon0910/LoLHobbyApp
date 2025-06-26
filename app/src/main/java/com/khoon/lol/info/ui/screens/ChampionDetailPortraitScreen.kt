@@ -9,12 +9,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.khoon.lol.info.R
 import com.khoon.lol.info.model.ChampionDetail
 import com.khoon.lol.info.ui.components.*
 
@@ -32,40 +28,19 @@ fun ChampionDetailPortraitScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Image section
-        with(sharedTransitionScope) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .sharedElement(
-                        rememberSharedContentState(key = "champion_${name}"),
-                        animatedVisibilityScope = animatedVisibilityScope
-                    )
-                    .sharedBounds(
-                        rememberSharedContentState(key = "champion_bounds_${name}"),
-                        animatedVisibilityScope = animatedVisibilityScope
-                    )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f/9f)
-                ) {
-                    AsyncImage(
-                        model = if (imageUrl != null) {
-                            "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${name}_0.jpg"
-                        } else {
-                            R.drawable.no_image
-                        },
-                        contentDescription = name,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        error = painterResource(id = R.drawable.no_image),
-                        placeholder = painterResource(id = R.drawable.no_image)
-                    )
-                }
-            }
-        }
+        ChampionImageLoader(
+            imagePath = if (imageUrl != null) {
+                "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${name}_0.jpg"
+            } else {
+                null
+            },
+            name = name,
+            animatedVisibilityScope = animatedVisibilityScope,
+            sharedTransitionScope = sharedTransitionScope,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f/9f)
+        )
 
         // Scrollable content
         Column(

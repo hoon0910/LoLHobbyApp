@@ -1,5 +1,6 @@
 package com.khoon.lol.info.ui.components
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.khoon.lol.info.model.ChampionEntity
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChampionImage(
     champion: ChampionEntity,

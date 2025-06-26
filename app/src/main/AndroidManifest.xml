@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- internet permission -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:name="com.khoon.lol.info.LoLApp"
         android:allowBackup="true"
@@ -25,8 +27,4 @@
             </intent-filter>
         </activity>
     </application>
-
-    <!-- internet permission -->
-    <uses-permission android:name="android.permission.INTERNET" />
-
 </manifest>
