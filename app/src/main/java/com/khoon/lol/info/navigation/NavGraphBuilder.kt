@@ -9,6 +9,17 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.khoon.lol.info.ui.screens.ChampionDetailScreen
 import com.khoon.lol.info.ui.screens.ChampionListScreen
+import com.khoon.lol.info.ui.screens.HomeScreen
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+fun NavGraphBuilder.homeScreen(
+    onImageClick: () -> Unit,
+    onSummonerClick: () -> Unit
+) {
+    composable(NavRoutes.Home.route) {
+        HomeScreen(onImageClick = onImageClick, onSummonerClick = onSummonerClick)
+    }
+}
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 fun NavGraphBuilder.championListScreen(
@@ -51,5 +62,12 @@ fun NavGraphBuilder.championDetailScreen(
             animatedVisibilityScope = animatedScope,
             sharedTransitionScope = sharedScope
         )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+fun NavGraphBuilder.summonerSearchScreen() {
+    composable(NavRoutes.SummonerSearch.route) {
+        com.khoon.lol.info.ui.screens.SummonerSearchScreen()
     }
 } 

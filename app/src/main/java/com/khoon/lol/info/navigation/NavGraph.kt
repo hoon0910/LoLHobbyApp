@@ -12,7 +12,7 @@ import androidx.navigation.compose.NavHost
 fun NavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    startDestination: String = NavRoutes.ChampionList.route
+    startDestination: String = NavRoutes.Home.route
 ) {
     SharedTransitionLayout {
         val sharedScope = this
@@ -21,14 +21,23 @@ fun NavGraph(
             startDestination = startDestination,
             modifier = modifier
         ) {
+            homeScreen(
+                onImageClick = {
+                    navController.navigate(NavRoutes.ChampionList.route) {
+                        popUpTo(NavRoutes.Home.route) { inclusive = true }
+                    }
+                },
+                onSummonerClick = {
+                    navController.navigate(NavRoutes.SummonerSearch.route)
+                }
+            )
             championListScreen(
                 onChampionClick = { championId, imageUrl, favorite->
-                    navController.navigate(NavRoutes.ChampionDetail.createRoute(championId, imageUrl
-                    ,favorite))
+                    navController.navigate(NavRoutes.ChampionDetail.createRoute(championId, imageUrl, favorite))
                 },
                 sharedScope
             )
-            //searchScreen()
+            summonerSearchScreen()
             championDetailScreen(
                 sharedScope
             )

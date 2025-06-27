@@ -3,20 +3,16 @@ package com.khoon.lol.info
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -59,14 +55,30 @@ fun MainCompose() {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        if (currentRoute == NavRoutes.ChampionList.route) {
+            BackHandler(enabled = true) {
+                navController.navigate(NavRoutes.Home.route) {
+                    popUpTo(NavRoutes.ChampionList.route) { inclusive = true }
+                }
+            }
+        }
         LoLAppBar(
-            showBackButton = currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true,
-            onBackClick = { navController.popBackStack() },
+            showBackButton = currentRoute != NavRoutes.Home.route,
+            onBackClick = {
+                if (currentRoute == NavRoutes.ChampionList.route) {
+                    navController.navigate(NavRoutes.Home.route) {
+                        popUpTo(NavRoutes.ChampionList.route) { inclusive = true }
+                    }
+                } else {
+                    navController.popBackStack()
+                }
+            },
             title = if (currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true) {
                 championId ?: "LOL DETAIL"
             } else {
                 "LOL COMPOSE"
             },
+            showFavoriteButton = currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true,
             isFavorite = championEntity?.isFavorite ?: false,
             onFavoriteClick = {
                 championEntity?.let { entity ->
@@ -77,11 +89,7 @@ fun MainCompose() {
         
         NavGraph(
             navController = navController,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    bottom = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp
-                )
+            modifier = Modifier.fillMaxSize()
         )
     }
 }

@@ -23,6 +23,7 @@ fun LoLAppBar(
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
     title: String = "LOL COMPOSE",
+    showFavoriteButton: Boolean = false,
     isFavorite: Boolean = false,
     onFavoriteClick: () -> Unit = {}
 ) {
@@ -45,7 +46,7 @@ fun LoLAppBar(
             }
         },
         actions = {
-            if (showBackButton) {
+            if (showFavoriteButton) {
                 FavoriteButton(
                     isFavorite = isFavorite,
                     onClick = onFavoriteClick,

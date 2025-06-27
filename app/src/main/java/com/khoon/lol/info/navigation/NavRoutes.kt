@@ -1,11 +1,13 @@
 package com.khoon.lol.info.navigation
 
 sealed class NavRoutes(val route: String) {
+    object Home : NavRoutes("home")
     object ChampionList : NavRoutes("champion_list")
     object ChampionDetail : NavRoutes("champion_detail/{championId}/{imageUrl}/{favorite}") {
         fun createRoute(championId: String, imageUrl: String, favorite: Boolean) =
             "champion_detail/$championId/${encodeUrl(imageUrl)}/${favorite}"
     }
+    object SummonerSearch : NavRoutes("summoner_search")
 
     companion object {
         fun encodeUrl(url: String): String = android.net.Uri.encode(url)
