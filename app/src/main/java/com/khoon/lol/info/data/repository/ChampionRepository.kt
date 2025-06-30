@@ -6,20 +6,19 @@ import com.khoon.lol.info.data.api.DataDragonAPI
 import com.khoon.lol.info.data.api.LeagueOfLegendAPI
 import com.khoon.lol.info.data.db.ChampionDao
 import com.khoon.lol.info.di.DispatcherModule
-import com.khoon.lol.info.model.ChampionEntity
 import com.khoon.lol.info.model.ChampionDetail
-import com.khoon.lol.info.utils.constant.AppConstant.TAG
+import com.khoon.lol.info.model.ChampionEntity
 import com.khoon.lol.info.utils.constant.AppConstant.API_KEY
+import com.khoon.lol.info.utils.constant.AppConstant.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 interface ChampionRepository {
     fun getAllChampions(): Flow<List<ChampionEntity>>
@@ -362,13 +361,16 @@ class ChampionRepositoryImpl @Inject constructor(
             val response = dataDragonApiService.getChampionData(version)
             if (response.isSuccessful) {
                 val name = response.body()?.data?.values?.find { it.key == id.toString() }?.name
-                android.util.Log.d("ChampionRepository", "[getChampionNameByIdFromDataDragon] id=$id, version=$version, result=$name")
+               Log.d("ChampionRepository",
+                   "[getChampionNameByIdFromDataDragon] " +
+                           "id=$id, version=$version, result=$name")
                 name
             } else {
                 null
             }
         } catch (e: Exception) {
-            android.util.Log.e("ChampionRepository", "[getChampionNameByIdFromDataDragon] id=$id, version=$version, error=${e.message}")
+            Log.e("ChampionRepository", "[getChampionNameByIdFromDataDragon]" +
+                    " id=$id, version=$version, error=${e.message}")
             null
         }
     }

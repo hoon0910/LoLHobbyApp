@@ -2,7 +2,6 @@ package com.khoon.lol.info.di
 
 import com.khoon.lol.info.data.api.DataDragonAPI
 import com.khoon.lol.info.data.api.LeagueOfLegendAPI
-import com.khoon.lol.info.utils.constant.AppConstant.API_KEY
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
