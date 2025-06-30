@@ -9,9 +9,9 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LeagueOfLegendAPI {
-    @GET("summoner/v4/summoners/{summonerId}")
+    @GET("summoner/v4/summoners/by-name/{summonerName}")
     suspend fun getSummoner(
-        @Path("summonerId") summonerName: String,
+        @Path("summonerName") summonerName: String,
         @Query("api_key") api_key: String
     ): Response<Summoner>
 
@@ -23,6 +23,8 @@ interface LeagueOfLegendAPI {
     ): Response<CurrentGameInfo>
 
     @GET("platform/v3/champion-rotations")
-    suspend fun getChampionRotation(): Response<ChampionRotation>
+    suspend fun getChampionRotation(
+        @Query("api_key") api_key: String
+    ): Response<ChampionRotation>
 
 }

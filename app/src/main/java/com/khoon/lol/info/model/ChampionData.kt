@@ -6,6 +6,7 @@ data class ChampionDataResponse(
 
 data class ChampionDetail(
     val id: String,
+    val key: String,
     val name: String,
     val title: String,
     val lore: String,

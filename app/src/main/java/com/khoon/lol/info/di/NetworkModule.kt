@@ -25,12 +25,10 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val original = chain.request()
-                val url = original.url.newBuilder()
-                    .addQueryParameter("api_key", API_KEY)
-                    .build()
                 val newRequest = original.newBuilder()
-                    .url(url)
                     .header("User-Agent", "MyRiotApp/1.0")
+                    .header("Accept", "application/json")
+                    .header("Content-Type", "application/json")
                     .build()
                 chain.proceed(newRequest)
             }
