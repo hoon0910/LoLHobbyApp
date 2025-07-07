@@ -22,6 +22,8 @@ import com.khoon.lol.info.navigation.NavRoutes
 import com.khoon.lol.info.ui.components.LoLAppBar
 import com.khoon.lol.info.utils.constant.AppConstant.TAG
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 
 @AndroidEntryPoint
 class LoLMain : ComponentActivity() {
@@ -54,6 +56,10 @@ fun MainCompose() {
         }
     }
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isHomeScreen = currentRoute == NavRoutes.Home.route
+
     Column(modifier = Modifier.fillMaxSize()) {
         if (currentRoute == NavRoutes.ChampionList.route) {
             BackHandler(enabled = true) {
@@ -62,31 +68,32 @@ fun MainCompose() {
                 }
             }
         }
-        LoLAppBar(
-            showBackButton = currentRoute != NavRoutes.Home.route,
-            onBackClick = {
-                if (currentRoute == NavRoutes.ChampionList.route) {
-                    navController.navigate(NavRoutes.Home.route) {
-                        popUpTo(NavRoutes.ChampionList.route) { inclusive = true }
+        if (!(isHomeScreen && isLandscape)) {
+            LoLAppBar(
+                showBackButton = currentRoute != NavRoutes.Home.route,
+                onBackClick = {
+                    if (currentRoute == NavRoutes.ChampionList.route) {
+                        navController.navigate(NavRoutes.Home.route) {
+                            popUpTo(NavRoutes.ChampionList.route) { inclusive = true }
+                        }
+                    } else {
+                        navController.popBackStack()
                     }
+                },
+                title = if (currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true) {
+                    championId ?: "LOL DETAIL"
                 } else {
-                    navController.popBackStack()
+                    "LOL COMPOSE"
+                },
+                showFavoriteButton = currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true,
+                isFavorite = championEntity?.isFavorite ?: false,
+                onFavoriteClick = {
+                    championEntity?.let { entity ->
+                        viewModel.toggleFavorite(entity)
+                    }
                 }
-            },
-            title = if (currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true) {
-                championId ?: "LOL DETAIL"
-            } else {
-                "LOL COMPOSE"
-            },
-            showFavoriteButton = currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true,
-            isFavorite = championEntity?.isFavorite ?: false,
-            onFavoriteClick = {
-                championEntity?.let { entity ->
-                    viewModel.toggleFavorite(entity)
-                }
-            }
-        )
-        
+            )
+        }
         NavGraph(
             navController = navController,
             modifier = Modifier.fillMaxSize()
