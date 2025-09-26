@@ -6,12 +6,15 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import coil.compose.AsyncImage
+import androidx.compose.ui.unit.dp
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.khoon.lol.info.R
 
@@ -46,7 +49,7 @@ fun ChampionImageLoader(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    AsyncImage(
+                    SubcomposeAsyncImage(
                         model = if (imagePath != null) {
                             ImageRequest.Builder(context)
                                 .data(imagePath)
@@ -60,17 +63,27 @@ fun ChampionImageLoader(
                         },
                         contentDescription = "Champion Image",
                         contentScale = contentScale,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        loading = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
+                        }
                     )
                 }
             }
         }
-    } else {
+    } else
         Box(
             modifier = modifier,
             contentAlignment = Alignment.Center
         ) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = if (imagePath != null) {
                     ImageRequest.Builder(context)
                         .data(imagePath)
@@ -84,8 +97,17 @@ fun ChampionImageLoader(
                 },
                 contentDescription = "Champion Image",
                 contentScale = contentScale,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                loading = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                }
             )
         }
     }
-} 
