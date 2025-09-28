@@ -4,12 +4,28 @@ import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel // 변경된 import 경로
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.khoon.lol.info.model.ChampionDetail
 import com.khoon.lol.info.model.ChampionDetailViewModel
+import com.khoon.lol.info.ui.components.*
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -27,7 +43,6 @@ fun ChampionDetailScreen(
         viewModel.loadChampionJsonData(name)
     }
 
-    // Detect screen orientation
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -47,5 +62,79 @@ fun ChampionDetailScreen(
             animatedVisibilityScope = animatedVisibilityScope,
             sharedTransitionScope = sharedTransitionScope
         )
+    }
+}
+
+@Composable
+fun ChampionDetailTabbedContent(
+    name: String,
+    detail: ChampionDetail?,
+    modifier: Modifier = Modifier // Allow passing modifiers for Portrait/Landscape specific layout
+) {
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val tabTitles = listOf("Info", "Stats", "Skills")
+
+    Column(modifier = modifier) { // Apply modifier here
+        TabRow(selectedTabIndex = selectedTabIndex) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(title) }
+                )
+            }
+        }
+
+        // Content based on selected tab
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f) // Ensure this column takes remaining space if parent has weight
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp, // Added top padding for content below TabRow
+                    bottom = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Spacer(modifier = Modifier.height(16.dp)) // This spacer is now part of the top padding of the Column
+            when (selectedTabIndex) {
+                0 -> { // Info Tab
+                    InfoSection(detail = detail)
+                    Spacer(modifier = Modifier.height(20.dp))
+                    ChampionInfoSection(detail = detail, name = name)
+                    Spacer(modifier = Modifier.height(20.dp))
+                    PassiveSection(detail = detail)
+                }
+                1 -> { // Stats Tab
+                    StatsSection(detail = detail)
+                }
+                2 -> { // Skills Tab
+                    ChampionSkillsSection(detail = detail)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp)) // Add spacer at the bottom for scroll padding
+        }
+    }
+}
+
+@Composable
+fun ChampionSkillsSection(detail: ChampionDetail?) {
+    // Placeholder for skills content
+    // TODO: Implement actual skills display based on ChampionDetail
+    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+        Text("Champion Skills Content Placeholder")
+        // You can access champion skills via detail?.spells or detail?.passive
+        // Example:
+        // detail?.passive?.let {
+        //     Text("Passive: ${it.name}")
+        //     Text(it.description)
+        // }
+        // detail?.spells?.forEach { spell ->
+        //     Text("Spell ${spell.id}: ${spell.name}")
+        //     Text(spell.description)
+        // }
     }
 }
