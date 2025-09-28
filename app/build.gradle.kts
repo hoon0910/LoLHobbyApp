@@ -53,8 +53,8 @@ kotlin {
 // Configure Kotlin compiler options
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) // JVM 타겟을 17로 수정
-        freeCompilerArgs.set(listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode"))
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        freeCompilerArgs.set(listOf("-Xannotation-default-target=param-property"))
     }
 }
 
@@ -99,7 +99,6 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt)
-    implementation(libs.hilt.android)
     implementation(libs.metadata)
     kapt(libs.hilt.compiler)
     

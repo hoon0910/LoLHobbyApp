@@ -16,7 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel // 변경된 import 경로
 import com.khoon.lol.info.model.ChampionViewModel
 import com.khoon.lol.info.ui.components.ChampionListContent
 import com.khoon.lol.info.ui.components.ChampionListHeaderBar

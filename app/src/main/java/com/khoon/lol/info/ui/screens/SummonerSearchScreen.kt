@@ -24,7 +24,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuAnchorType // 변경된 import
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,7 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.khoon.lol.info.model.SummonerViewModel
 import com.khoon.lol.info.ui.components.ChampionImageLoader
 
@@ -160,7 +160,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                             label = { Text("Server") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                             modifier = Modifier
-                                .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true) // 변경된 사용
                                 .width(100.dp)
                                 .padding(end = 8.dp)
                         )
@@ -246,4 +246,4 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
 @Composable
 fun SummonerSearchScreenPreview() {
     SummonerSearchScreen()
-} 
+}
