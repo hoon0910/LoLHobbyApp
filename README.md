@@ -1,78 +1,100 @@
-# LoL Champion Info App 🎮
+# LoL Champion Info App 🎮  
 
-An Android application that provides **detailed League of Legends champion information** with a clean UI, smooth navigation, and offline storage.  
-This project was built to demonstrate **modern Android development best practices** and showcases skills in **Compose, MVVM, Hilt, Room, Retrofit, and Coroutines**.
+An Android application that delivers **comprehensive League of Legends champion information** with a modern UI, smooth navigation, and offline support.  
+This project showcases **modern Android development best practices** using **Jetpack Compose, MVVM, Hilt, Room, Retrofit, and Coroutines**.  
+
+---
+
+## 🔖 Tech Badges  
+
+<p align="left">
+  <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Hilt-D00000?style=for-the-badge&logo=google&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Room-FF6F00?style=for-the-badge&logo=sqlite&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Retrofit-009688?style=for-the-badge&logo=square&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Coroutines-FF4081?style=for-the-badge&logo=kotlin&logoColor=white"/>
+</p>  
 
 ---
 
-## ✨ Key Features
-- Browse and search all champions with images and stats
-- Mark favorites and manage your list
-- View detailed champion pages with abilities and lore
-- Responsive layouts (portrait & landscape)
-- Smooth navigation transitions with Jetpack Compose
+## ✨ Features  
+- Browse and search champions with images and stats  
+- Mark and manage favorites  
+- View detailed champion pages (lore, abilities, and stats)  
+- Responsive layouts for both portrait & landscape  
+- Smooth navigation transitions with Jetpack Compose  
 
 ---
-## 📸 Preview
-<p style="text-align:center;">
+
+## 📸 Preview  
+<p align="center">
   <img src="docs/screenshots/preview.gif" alt="App Preview" width="400"/>
-</p>
-
----
-## 📸 Screenshots
-| Champion List                      | Champion Detail  info tab                 | Champion detail stats tab                   | Champion detail skill tab                    |
-|------------------------------------|-------------------------------------------|---------------------------------------------|----------------------------------------------|
-| ![List](docs/screenshots/list.png) | ![info](docs/screenshots/detail_info.png) | ![stats](docs/screenshots/detail_stats.png) | ![skill](docs/screenshots/detail_skills.png) |
+</p>  
 
 ---
 
-## 🎯 Why This Project?
+## 📷 Screenshots  
+| Champion List | Detail – Info | Detail – Stats | Detail – Skills |  
+|---------------|---------------|----------------|-----------------|  
+| ![List](docs/screenshots/list.png) | ![Info](docs/screenshots/detail_info.png) | ![Stats](docs/screenshots/detail_stats.png) | ![Skills](docs/screenshots/detail_skills.png) |  
+
+---
+
+## 🎯 Purpose  
 - Demonstrates **end-to-end Android app development** (UI, data, network, DI)  
-- Showcases **Clean Architecture** and **modern Android stack**  
-- Built as a personal project to explore **Jetpack Compose and dependency injection**  
-- Serves as a portfolio project for mobile engineering roles
+- Highlights **Clean Architecture** with MVVM + Repository pattern  
+- Built as a **personal project** to explore Jetpack Compose and dependency injection  
+- Serves as a **portfolio project** for mobile engineering roles  
 
 ---
 
-## 🛠️ Tech Stack & Library
+## 🛠 Tech Stack  
 
-### Minimum Requirements
-- **Minimum SDK:** 24 (Android 7.0 Nougat)  
-- **Language:** Kotlin  
+**Language & Requirements**  
+- Kotlin, Min SDK 24 (Android 7.0)  
 
-### Architecture
-- **MVVM (Model-View-ViewModel):** Separates UI, business logic, and data layers for better maintainability and testability.  
-- **Repository Pattern:** Acts as a mediator between data sources (local DB, network, etc.) and business logic, ensuring consistent data management.  
+**Architecture**  
+- MVVM + Repository pattern  
+- Clean Architecture principles  
 
-### Core Libraries
-- **Jetpack Compose** – Android’s modern declarative UI toolkit  
-  (`androidx.compose.*, material3, foundation, ui, animation, tooling.preview, material.icons.extended, constraintlayout.compose`)  
-- **Lifecycle** – Observes Android component lifecycles and manages UI state (`androidx.lifecycle.*`)  
-- **ViewModel** – Stores and manages UI-related data across configuration changes (`androidx.lifecycle.viewmodel.*`)  
-- **Navigation Compose** – Simplifies navigation and deep linking (`androidx.navigation.compose`)  
-- **Room** – Type-safe abstraction layer over SQLite (`androidx.room.*`)  
-- **Hilt** – Dependency injection framework (`hilt, hilt.android, androidx.hilt.navigation.compose, kapt(hilt.compiler)`)  
-- **Retrofit2** – Type-safe HTTP client (`retrofit, converter.gson`)  
-- **OkHttp3** – HTTP client for network communication (`okhttp`)  
-- **Gson** – JSON serialization/deserialization (`gson`)  
-- **Coil** – Image loading library optimized for Compose (`coil.compose`)  
-- **Coroutines & Flow** – Async programming and reactive data (`androidx.lifecycle.runtime.ktx, androidx.room.ktx`)  
-- **ConstraintLayout Compose** – Flexible UI layouts (`androidx.constraintlayout.compose`)  
-
-### Open-Source Libraries Used
-- Jetpack Compose  
-- AndroidX Lifecycle  
-- AndroidX Navigation Compose  
-- Room  
-- Hilt  
-- Retrofit2  
-- OkHttp3  
-- Gson  
-- Coil  
-- ConstraintLayout Compose  
+**Core Libraries**  
+- **Jetpack Compose** – Modern declarative UI  
+- **Lifecycle & ViewModel** – State management  
+- **Navigation Compose** – Navigation and deep linking  
+- **Room** – Local database  
+- **Hilt** – Dependency injection  
+- **Retrofit2 + OkHttp3 + Gson** – Networking & JSON parsing  
+- **Coil** – Image loading  
+- **Coroutines & Flow** – Asynchronous & reactive programming  
+- **ConstraintLayout Compose** – Advanced layouts  
 
 ---
 
-## 📜 License
-This project is for **educational and demonstration purposes** only.  
-League of Legends and all related assets are © Riot Games.
+## 🚀 Getting Started  
+
+### Prerequisites  
+- Android Studio **Giraffe (2022.3.1)** or newer  
+- JDK 11+  
+- Internet connection (for fetching champion data)  
+
+### Installation  
+```bash
+# Clone this repository
+git clone https://github.com/yourusername/lol-champion-info.git
+
+# Open the project in Android Studio
+# Let Gradle sync and build the project
+```
+
+### Run the App  
+1. Select a physical device or Android Emulator (API 24+).  
+2. Click **Run ▶️** in Android Studio.  
+3. Explore League of Legends champions inside the app! 🎮  
+
+---
+
+## 📜 License  
+This project is for **educational and demonstration purposes only**.  
+League of Legends and related assets are © Riot Games.  
