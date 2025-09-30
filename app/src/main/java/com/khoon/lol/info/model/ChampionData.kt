@@ -4,6 +4,17 @@ data class ChampionDataResponse(
     val data: Map<String, ChampionDetail>
 )
 
+// New data class for image information
+data class ImageDto(
+    val full: String,
+    val sprite: String? = null,
+    val group: String? = null,
+    val x: Int? = null,
+    val y: Int? = null,
+    val w: Int? = null,
+    val h: Int? = null
+)
+
 data class ChampionDetail(
     val id: String,
     val key: String,
@@ -13,8 +24,8 @@ data class ChampionDetail(
     val tags: List<String>,
     val info: Info,
     val stats: Stats,
-    val spells: List<Spell>,
-    val passive: Passive
+    val spells: List<Spell>, // Type remains List<Spell>, but Spell class itself will be updated
+    val passive: Passive    // Type remains Passive, but Passive class itself will be updated
 )
 
 data class Info(
@@ -37,10 +48,12 @@ data class Spell(
     val id: String,
     val name: String,
     val description: String,
-    val cooldown: List<Float>
+    val cooldown: List<Float>,
+    val image: ImageDto // Added image field
 )
 
 data class Passive(
     val name: String,
-    val description: String
+    val description: String,
+    val image: ImageDto // Added image field
 )

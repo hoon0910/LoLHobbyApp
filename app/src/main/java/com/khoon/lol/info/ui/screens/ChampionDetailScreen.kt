@@ -25,7 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.khoon.lol.info.model.ChampionDetail
 import com.khoon.lol.info.model.ChampionDetailViewModel
-import com.khoon.lol.info.ui.components.*
+// Ensure ChampionSkillsSection is imported from .components if not already handled by wildcard
+import com.khoon.lol.info.ui.components.ChampionInfoSection
+import com.khoon.lol.info.ui.components.ChampionSkillsSection // Explicit import for clarity
+import com.khoon.lol.info.ui.components.InfoSection
+import com.khoon.lol.info.ui.components.PassiveSection
+import com.khoon.lol.info.ui.components.StatsSection
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -112,6 +117,7 @@ fun ChampionDetailTabbedContent(
                     StatsSection(detail = detail)
                 }
                 2 -> { // Skills Tab
+                    // This now calls the composable from the .components package
                     ChampionSkillsSection(detail = detail)
                 }
             }
@@ -120,21 +126,4 @@ fun ChampionDetailTabbedContent(
     }
 }
 
-@Composable
-fun ChampionSkillsSection(detail: ChampionDetail?) {
-    // Placeholder for skills content
-    // TODO: Implement actual skills display based on ChampionDetail
-    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Text("Champion Skills Content Placeholder")
-        // You can access champion skills via detail?.spells or detail?.passive
-        // Example:
-        // detail?.passive?.let {
-        //     Text("Passive: ${it.name}")
-        //     Text(it.description)
-        // }
-        // detail?.spells?.forEach { spell ->
-        //     Text("Spell ${spell.id}: ${spell.name}")
-        //     Text(spell.description)
-        // }
-    }
-}
+// The old placeholder ChampionSkillsSection composable definition is removed from here.
