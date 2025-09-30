@@ -14,12 +14,14 @@ This project was built to demonstrate **modern Android development best practice
 
 ---
 
-                                                          ![App Preview](docs/screenshots/preview.gif)
+<p style="text-align:center;">
+  <img src="docs/screenshots/preview.gif" alt="App Preview" width="400"/>
+</p>
 
 ## 📸 Screenshots
-| Champion List                      | Champion Detail  info tab                 | Champion detail stats tab                      | Champion detail skill tab                    |
-|------------------------------------|-------------------------------------------|------------------------------------------------|--------------------------------------------- |
-| ![List](docs/screenshots/list.png) | ![info](docs/screenshots/detail_info.png) | ![stats](docs/screenshots/detail_stats.png)    | ![skill](docs/screenshots/detail_skills.png) |
+| Champion List                      | Champion Detail  info tab                 | Champion detail stats tab                   | Champion detail skill tab                    |
+|------------------------------------|-------------------------------------------|---------------------------------------------|----------------------------------------------|
+| ![List](docs/screenshots/list.png) | ![info](docs/screenshots/detail_info.png) | ![stats](docs/screenshots/detail_stats.png) | ![skill](docs/screenshots/detail_skills.png) |
 
 ---
 
