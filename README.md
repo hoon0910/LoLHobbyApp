@@ -72,6 +72,20 @@ This project showcases **modern Android development best practices** using **Jet
 
 ---
 
+## 🏗 Architecture  
+
+The project follows **Clean Architecture** with **MVVM**.  
+
+![Architecture](docs/architecture/architecture_diagram.png)
+
+- **Presentation Layer**: UI built with Jetpack Compose. The `ViewModel` exposes reactive UI state using Kotlin `Flow`.  
+- **Domain Layer**: Encapsulates business logic and use cases, independent of framework details.  
+- **Data Layer**: Repositories provide a single source of truth, mediating between local and remote data sources.  
+- **Local Data Source**: Caching champion details using Room database for offline access.  
+- **Remote Data Source**: Fetching champion information from Riot’s Data Dragon API via Retrofit & OkHttp.  
+
+---
+
 ## 🚀 Getting Started  
 
 ### Prerequisites  
