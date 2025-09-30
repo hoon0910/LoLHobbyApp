@@ -14,7 +14,7 @@ This project was built to demonstrate **modern Android development best practice
 
 ---
 
-![App Preview](docs/screenshots/preview.gif)
+                                                          ![App Preview](docs/screenshots/preview.gif)
 
 ## 📸 Screenshots
 | Champion List                      | Champion Detail  info tab                 | Champion detail stats tab                      | Champion detail skill tab                    |
