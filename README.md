@@ -15,9 +15,9 @@ This project was built to demonstrate **modern Android development best practice
 ---
 
 ## 📸 Screenshots
-| Champion List | Champion Detail | Favorites |
-|---------------|-----------------|-----------|
-| ![List](docs/screenshots/list.png) | ![Detail](docs/screenshots/detail.png) | ![Favorites](docs/screenshots/favorites.png) |
+| Champion List                      | Champion Detail  info tab                   | Champion detail stats tab                    |
+|------------------------------------|---------------------------------------------|----------------------------------------------|
+| ![List](docs/screenshots/list.png) | ![Detail](docs/screenshots/detail_info.png) | ![Favorites](docs/screenshots/favorites.png) |
 
 ---
 
