@@ -13,11 +13,12 @@ This project was built to demonstrate **modern Android development best practice
 - Smooth navigation transitions with Jetpack Compose
 
 ---
-
+## 📸 Preview
 <p style="text-align:center;">
   <img src="docs/screenshots/preview.gif" alt="App Preview" width="400"/>
 </p>
 
+---
 ## 📸 Screenshots
 | Champion List                      | Champion Detail  info tab                 | Champion detail stats tab                   | Champion detail skill tab                    |
 |------------------------------------|-------------------------------------------|---------------------------------------------|----------------------------------------------|
