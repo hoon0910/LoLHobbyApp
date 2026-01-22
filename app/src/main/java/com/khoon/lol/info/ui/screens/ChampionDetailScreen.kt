@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.khoon.lol.info.model.ChampionDetail
 import com.khoon.lol.info.model.ChampionDetailViewModel
-// Ensure ChampionSkillsSection is imported from .components if not already handled by wildcard
 import com.khoon.lol.info.ui.components.ChampionInfoSection
 import com.khoon.lol.info.ui.components.ChampionSkillsSection // Explicit import for clarity
 import com.khoon.lol.info.ui.components.InfoSection
@@ -41,7 +40,8 @@ fun ChampionDetailScreen(
     animatedVisibilityScope: AnimatedContentScope,
     sharedTransitionScope: SharedTransitionScope
 ) {
-    val championEntity = viewModel.championEntity.collectAsState().value
+    val championState = remember(name) { viewModel.observeChampion(name) }
+    val championEntity by championState.collectAsState()
     val detail = championEntity?.detail
 
     LaunchedEffect(name) {

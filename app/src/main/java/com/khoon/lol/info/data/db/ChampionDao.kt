@@ -12,6 +12,9 @@ interface ChampionDao {
     @Query("SELECT * FROM champion_table WHERE name = :name")
     suspend fun getChampionByName(name: String): ChampionEntity?
 
+    @Query("SELECT * FROM champion_table WHERE name = :name")
+    fun observeChampionByName(name: String): Flow<ChampionEntity?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(champion: ChampionEntity): Long
 

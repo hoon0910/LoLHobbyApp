@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,8 +21,13 @@ class ChampionViewModel @Inject constructor(
     private val championRepository: ChampionRepository
 ) : AndroidViewModel(application) {
 
-    private val _allChampions = MutableStateFlow<List<ChampionEntity>>(emptyList())
-    val allChampions: StateFlow<List<ChampionEntity>> = _allChampions
+    // Directly use Flow from repository and convert to StateFlow
+    private val allChampions: StateFlow<List<ChampionEntity>> = championRepository.getAllChampions()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 
     // New state for search query and favorite filter
     private val _searchQuery = MutableStateFlow("")
@@ -38,9 +44,18 @@ class ChampionViewModel @Inject constructor(
     private val _selectedTags = MutableStateFlow<Set<String>>(emptySet())
     val selectedTags: StateFlow<Set<String>> = _selectedTags
 
-    // Separate state for all available tags
-    private val _allAvailableTags = MutableStateFlow<Set<String>>(emptySet())
-    val allAvailableTags: StateFlow<Set<String>> = _allAvailableTags
+    // Extract all available tags from all champions Flow
+    val allAvailableTags: StateFlow<Set<String>> = allChampions
+        .map { champions ->
+            champions.flatMap { champion ->
+                champion.detail?.tags ?: emptyList()
+            }.toSet()
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptySet()
+        )
 
     // Combined flow for filtered list
     val filteredChampions: StateFlow<List<ChampionEntity>> =
@@ -80,18 +95,6 @@ class ChampionViewModel @Inject constructor(
 
     init {
         fetchChampionData()
-        // Collect the Flow from repository
-        viewModelScope.launch {
-            championRepository.getAllChampions().collect { champions ->
-                _allChampions.value = champions
-                // Extract all available tags from all champions
-                val allTags = champions.flatMap { champion ->
-                    champion.detail?.tags ?: emptyList()
-                }.toSet()
-                _allAvailableTags.value = allTags
-                Log.d("ChampionViewModel", "Loaded ${champions.size} champions with ${allTags.size} unique tags: $allTags")
-            }
-        }
     }
 
     private fun fetchChampionData() {

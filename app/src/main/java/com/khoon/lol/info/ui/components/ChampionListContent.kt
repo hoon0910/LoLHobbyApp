@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
@@ -26,10 +27,11 @@ fun ChampionListContent(
     onChampionClick: (String, String, Boolean) -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    headerHeight: Dp
+    headerHeight: Dp,
+    listState: LazyListState = rememberLazyListState() // Receive from external or create new
 ) {
     val bottomPadding = WindowInsets.navigationBars.getBottom(LocalDensity.current).dp + 32.dp
-    val state = rememberLazyListState()
+    val state = listState // Use passed listState
 
     // Detect screen orientation and determine grid columns
     val configuration = LocalConfiguration.current

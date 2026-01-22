@@ -25,6 +25,7 @@ interface ChampionRepository {
     suspend fun insertChampion(champion: ChampionEntity): ChampionEntity
     suspend fun updateChampion(champion: ChampionEntity): Int
     suspend fun getChampionByName(name: String): ChampionEntity?
+    fun observeChampionByName(name: String): Flow<ChampionEntity?>
     suspend fun fetchChampionData()
     suspend fun fetchChampionRotation(): List<String>
     suspend fun saveChampionImage(championName: String, version: String)
@@ -67,6 +68,10 @@ class ChampionRepositoryImpl @Inject constructor(
         return withContext(DispatcherModule.provideIoDispatcher()) {
             championDao.getChampionByName(name)
         }
+    }
+
+    override fun observeChampionByName(name: String): Flow<ChampionEntity?> {
+        return championDao.observeChampionByName(name)
     }
 
     override suspend fun fetchChampionData() {

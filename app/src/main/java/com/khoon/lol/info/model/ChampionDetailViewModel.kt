@@ -9,8 +9,9 @@ import com.khoon.lol.info.di.IoDispatcher
 import com.khoon.lol.info.utils.constant.AppConstant.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -21,8 +22,15 @@ class ChampionDetailViewModel @Inject constructor(
     private val championRepository: ChampionRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : AndroidViewModel(application) {
-    private val _championEntity = MutableStateFlow<ChampionEntity?>(null)
-    val championEntity: StateFlow<ChampionEntity?> = _championEntity
+
+    fun observeChampion(name: String): StateFlow<ChampionEntity?> {
+        return championRepository.observeChampionByName(name)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null
+            )
+    }
 
     fun loadChampionJsonData(name: String) {
         viewModelScope.launch {
@@ -44,14 +52,13 @@ class ChampionDetailViewModel @Inject constructor(
                             isFavorite = currentIsFavorite,
                             detail = detail
                         )
-                        championToUpdate = championRepository.insertChampion(newChampion)
+                        championRepository.insertChampion(newChampion)
                     } else {
                         // If champion exists, just update its detail
                         championToUpdate = championToUpdate.copy(detail = detail)
                         championRepository.updateChampion(championToUpdate)
                     }
-
-                    _championEntity.value = championToUpdate // Set the value with the entity that has the correct ID
+                    // Flow will automatically emit the updated value
 
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to fetch champion data: ${e.message}")
@@ -62,9 +69,9 @@ class ChampionDetailViewModel @Inject constructor(
 
     fun toggleFavorite(champion: ChampionEntity) = viewModelScope.launch {
         val updatedChampion = champion.copy(isFavorite = !champion.isFavorite)
-        Log.d(TAG, "Toggle with ${!champion.isFavorite}, ${champion.name}" )
+        Log.d(TAG, "Toggle with ${!champion.isFavorite}, ${champion.name}")
         championRepository.updateChampion(updatedChampion)
         Log.d(TAG, "Favorite status updated for ${updatedChampion.name} to ${updatedChampion.isFavorite}")
-        _championEntity.value = updatedChampion
+        // Flow will automatically emit the updated value
     }
 }
