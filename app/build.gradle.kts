@@ -1,26 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    id("kotlin-kapt")
 }
 
 android {
     namespace = "com.khoon.lol.info"
-    compileSdk = 36
-
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.khoon.lol.info"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -99,9 +91,8 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt)
-    implementation(libs.metadata)
-    kapt(libs.hilt.compiler)
-    
+    ksp(libs.hilt.compiler)
+
     // Hilt Compose
     implementation(libs.androidx.hilt.navigation.compose.v110)
     

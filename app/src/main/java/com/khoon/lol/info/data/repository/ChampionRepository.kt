@@ -161,10 +161,8 @@ class ChampionRepositoryImpl @Inject constructor(
                     if (detailId != null) detailId to entity.name else null
                 }.toMap()
                 val names = freeIds.mapNotNull { idToName[it] }
-                if (names.isEmpty()) {
+                names.ifEmpty {
                     freeIds.map { it.toString() }
-                } else {
-                    names
                 }
             } else {
                 Log.d("khoon", "error")
@@ -291,12 +289,8 @@ class ChampionRepositoryImpl @Inject constructor(
             if (!response.isSuccessful) return@withContext emptyList()
 
             val freeIds = response.body()?.freeChampionIds ?: emptyList()
-            val version = try {
-                val versionResponse = dataDragonApiService.getVersions()
-                versionResponse.body()?.firstOrNull() ?: "13.9.1"
-            } catch (e: Exception) { 
-                "13.9.1" 
-            }
+            val version = runCatching { dataDragonApiService.getVersions().body()
+                ?.firstOrNull() }.getOrNull() ?: "13.9.1"
 
             val result = mutableListOf<Pair<String, String?>>()
             for (id in freeIds) {
@@ -327,15 +321,6 @@ class ChampionRepositoryImpl @Inject constructor(
         }
     }
 
-    // For detail only - only check detail (improved getChampionDetail)
-    private suspend fun getChampionDetailOnly(name: String): ChampionDetail? {
-        val champion = championDao.getChampionByName(name)
-        return if (champion?.detail != null) {
-            champion.detail
-        } else {
-            fetchChampionDetailFromAPI(name)
-        }
-    }
 
     private suspend fun fetchChampionDetailFromAPI(name: String): ChampionDetail? {
         return try {
