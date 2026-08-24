@@ -8,6 +8,7 @@ import com.khoon.lol.info.data.db.ChampionDao
 import com.khoon.lol.info.di.DispatcherModule
 import com.khoon.lol.info.model.ChampionDetail
 import com.khoon.lol.info.model.ChampionEntity
+import com.khoon.lol.info.model.RotationChampionRows
 import com.khoon.lol.info.R
 import com.khoon.lol.info.utils.constant.AppConstant.API_KEY
 import com.khoon.lol.info.utils.constant.AppConstant.TAG
@@ -31,7 +32,7 @@ interface ChampionRepository {
     suspend fun fetchChampionRotation(): List<String>
     suspend fun saveChampionImage(championName: String, version: String)
     suspend fun getChampionDetail(name: String): ChampionDetail?
-    suspend fun fetchRotationChampionImages(): List<Pair<String, String?>>
+    suspend fun fetchRotationChampionImages(): RotationChampionRows
     /** Map free-rotation champion IDs to name + local image path (DataDragon + DB). */
     suspend fun resolveRotationImages(freeChampionIds: List<Int>): List<Pair<String, String?>>
 }
@@ -274,7 +275,7 @@ class ChampionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun fetchRotationChampionImages(): List<Pair<String, String?>> {
+    override suspend fun fetchRotationChampionImages(): RotationChampionRows {
         Log.d(TAG, "called fetchRotationChampionImages")
 
         return withContext(DispatcherModule.provideIoDispatcher()) {
@@ -283,10 +284,15 @@ class ChampionRepositoryImpl @Inject constructor(
             if (response.errorBody() != null) {
                 Log.d(TAG, "errorBody: ${response.errorBody()?.string()}")
             }
-            if (!response.isSuccessful) return@withContext emptyList()
+            if (!response.isSuccessful) return@withContext RotationChampionRows()
 
-            val freeIds = response.body()?.freeChampionIds ?: emptyList()
-            resolveRotationImages(freeIds)
+            val body = response.body()
+            val freeIds = body?.freeChampionIds.orEmpty()
+            val newPlayerIds = body?.freeChampionIdsForNewPlayers.orEmpty()
+            RotationChampionRows(
+                freeRotation = resolveRotationImages(freeIds),
+                newPlayerRotation = resolveRotationImages(newPlayerIds),
+            )
         }
     }
 
@@ -300,9 +306,10 @@ class ChampionRepositoryImpl @Inject constructor(
                 dataDragonApiService.getVersions().body()?.firstOrNull()
             }.getOrNull() ?: "13.9.1"
 
+            val idToChampion = loadChampionIdMap(version)
             val result = mutableListOf<Pair<String, String?>>()
             for (id in freeChampionIds) {
-                val champion = getChampionIdAndDisplayName(id, version)
+                val champion = idToChampion[id]
                 if (champion != null) {
                     // Image/DB key = DataDragon id (LeeSin); UI label = display name (Lee Sin)
                     val imagePath = getChampionImagePath(champion.id, version)
@@ -334,31 +341,18 @@ class ChampionRepositoryImpl @Inject constructor(
         val displayName: String,
     )
 
-    private suspend fun getChampionIdAndDisplayName(id: Int, version: String): ChampionIdDisplay? {
+    private suspend fun loadChampionIdMap(version: String): Map<Int, ChampionIdDisplay> {
         return try {
             val response = dataDragonApiService.getChampionData(version)
-            if (response.isSuccessful) {
-                val entry = response.body()?.data?.entries
-                    ?.find { it.value.key == id.toString() }
-                if (entry != null) {
-                    ChampionIdDisplay(id = entry.key, displayName = entry.value.name).also {
-                        Log.d(
-                            "ChampionRepository",
-                            "[getChampionIdAndDisplayName] id=$id, key=${it.id}, name=${it.displayName}"
-                        )
-                    }
-                } else {
-                    null
+            if (!response.isSuccessful) return emptyMap()
+            response.body()?.data?.mapNotNull { (key, detail) ->
+                detail.key.toIntOrNull()?.let { numericId ->
+                    numericId to ChampionIdDisplay(id = key, displayName = detail.name)
                 }
-            } else {
-                null
-            }
+            }?.toMap().orEmpty()
         } catch (e: Exception) {
-            Log.e(
-                "ChampionRepository",
-                "[getChampionIdAndDisplayName] id=$id, version=$version, error=${e.message}"
-            )
-            null
+            Log.e(TAG, "[loadChampionIdMap] version=$version, error=${e.message}")
+            emptyMap()
         }
     }
 

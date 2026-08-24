@@ -64,4 +64,16 @@
     <string name="summoner_by_puuid_format">summonerLevel: %1$s\nprofileIconId: %2$s\nid: %3$s\naccountId: %4$s\npuuid: %5$s</string>
     <string name="summoner_result_format">Name: %1$s\nLevel: %2$s\nID: %3$s</string>
     <string name="error_with_message">Error: %1$s</string>
+
+    <string name="free_rotation">Free Rotation</string>
+    <string name="new_player_rotation">New Player</string>
+    <string name="account_candidates">Account Candidates</string>
+    <string name="ranked">Ranked</string>
+    <string name="unranked">Unranked</string>
+    <string name="no_accounts_found">No accounts found for \"%1$s\"</string>
+    <string name="summoner_search_stg_only">Summoner search is available in stg (mock) only</string>
+    <string name="search_error">Search error: %1$d\n%2$s</string>
+    <string name="label_region">Region</string>
+    <string name="placeholder_riot_id_search">Game name + #Tag</string>
+    <string name="rotation_unavailable">Rotation unavailable. Check mock server at %1$s</string>
 </resources>

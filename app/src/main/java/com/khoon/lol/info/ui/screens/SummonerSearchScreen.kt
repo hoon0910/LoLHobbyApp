@@ -1,12 +1,9 @@
 package com.khoon.lol.info.ui.screens
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,13 +19,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.ExposedDropdownMenuAnchorType // 변경된 import
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,269 +52,110 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.khoon.lol.info.R
+import com.khoon.lol.info.data.api.AccountDto
 import com.khoon.lol.info.model.SummonerViewModel
 import com.khoon.lol.info.ui.components.ChampionImageLoader
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
-    var query by remember { mutableStateOf("") }
-    var riotIdQuery by remember { mutableStateOf("") }
+    var searchQuery by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    val riotIdFocusRequester = remember { FocusRequester() }
+    val searchFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    
+
     val servers = listOf(
-        "NA", "EUW", "EUNE", "KR", "JP", "OCE", "LAN", "LAS", "TR", "BR", "RU", "SEA", "ME", "VN", "TW", "SG", "CN", "PH", "TH", "PBE"
+        "NA", "EUW", "EUNE", "KR", "JP", "OCE", "LAN", "LAS", "TR", "BR", "RU",
+        "SEA", "ME", "VN", "TW", "SG", "CN", "PH", "TH", "PBE",
     )
-    var selectedServer by remember { mutableStateOf(servers[3]) } // Default: KR
+    var selectedServer by remember { mutableStateOf(servers[3]) }
 
     val rotationChampions by viewModel.rotationChampions.collectAsState()
+    val newPlayerRotationChampions by viewModel.newPlayerRotationChampions.collectAsState()
+    val rotationError by viewModel.rotationError.collectAsState()
+    val searchCandidates by viewModel.searchCandidates.collectAsState()
     val accountResult by viewModel.accountResult.collectAsState()
     val summonerByPuuidResult by viewModel.summonerByPuuidResult.collectAsState()
-    val summonerResult by viewModel.result.collectAsState()
+    val leagueEntriesResult by viewModel.leagueEntriesResult.collectAsState()
 
-    // Load rotation champions on first entry
+    val onSearch: () -> Unit = {
+        if (searchQuery.isNotBlank()) {
+            viewModel.searchRiotId(searchQuery, selectedServer)
+            keyboardController?.hide()
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.fetchRotationChampions()
         delay(100.milliseconds)
-        riotIdFocusRequester.requestFocus()
+        searchFocusRequester.requestFocus()
         keyboardController?.show()
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Rotation Champions section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.rotation_champions),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-                
-                // Rotation champion horizontal scroll row
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .border(
-                            width = 2.dp,
-                            color = androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                ) {
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 400.dp)
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(rotationChampions.take(20)) { (name, imagePath) ->
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.width(80.dp)
-                            ) {
-                                ChampionImageLoader(
-                                    imagePath = imagePath,
-                                    name = name,
-                                    modifier = Modifier
-                                        .size(60.dp)
-                                        .aspectRatio(1f)
-                                )
-                                Text(
-                                    text = name, 
-                                    modifier = Modifier.padding(top = 4.dp),
-                                    fontSize = 10.sp
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
+            RotationChampionsSection(
+                title = stringResource(R.string.free_rotation),
+                rotationChampions = rotationChampions,
+                emptyMessage = rotationError ?: "—",
+            )
 
-            // Account by Riot ID (new — between Rotation and Search a Summoner)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.account_by_riot_id),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = riotIdQuery,
-                        onValueChange = { riotIdQuery = it },
-                        label = { Text(stringResource(R.string.label_riot_id)) },
-                        placeholder = { Text(stringResource(R.string.placeholder_riot_id)) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp)
-                            .focusRequester(riotIdFocusRequester),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                if (riotIdQuery.isNotBlank()) {
-                                    viewModel.fetchAccountByRiotId(riotIdQuery)
-                                    keyboardController?.hide()
-                                }
-                            }
-                        ),
-                    )
-                    Button(
-                        onClick = {
-                            if (riotIdQuery.isNotBlank()) {
-                                viewModel.fetchAccountByRiotId(riotIdQuery)
-                            }
-                        },
-                        enabled = riotIdQuery.isNotBlank()
-                    ) {
-                        Text(stringResource(R.string.search))
-                    }
-                }
-            }
-
-            if (accountResult.isNotBlank()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.account_info),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .border(
-                                width = 2.dp,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = accountResult,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-
-            if (summonerByPuuidResult.isNotBlank()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.summoner_info),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .border(
-                                width = 2.dp,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = summonerByPuuidResult,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
+            RotationChampionsSection(
+                title = stringResource(R.string.new_player_rotation),
+                rotationChampions = newPlayerRotationChampions,
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // Search Summoner section
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 8.dp),
             ) {
                 Text(
                     text = stringResource(R.string.search_a_summoner),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    modifier = Modifier.padding(bottom = 12.dp),
                 )
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     ExposedDropdownMenuBox(
                         expanded = expanded,
-                        onExpandedChange = { expanded = !expanded }
+                        onExpandedChange = { expanded = !expanded },
                     ) {
                         OutlinedTextField(
                             value = selectedServer,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text(stringResource(R.string.label_server)) },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                            label = { Text(stringResource(R.string.label_region)) },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
                             modifier = Modifier
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true) // 변경된 사용
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
                                 .width(100.dp)
-                                .padding(end = 8.dp)
+                                .padding(end = 8.dp),
                         )
                         ExposedDropdownMenu(
                             expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                            onDismissRequest = { expanded = false },
                         ) {
                             servers.forEach { server ->
                                 DropdownMenuItem(
@@ -319,70 +163,227 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                                     onClick = {
                                         selectedServer = server
                                         expanded = false
-                                    }
+                                    },
                                 )
                             }
                         }
                     }
                     OutlinedTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        label = { Text(stringResource(R.string.label_summoner_name)) },
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        label = { Text(stringResource(R.string.label_riot_id)) },
+                        placeholder = { Text(stringResource(R.string.placeholder_riot_id_search)) },
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 8.dp)
+                            .focusRequester(searchFocusRequester),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
                     )
                     Button(
-                        onClick = { 
-                            if (query.isNotBlank()) {
-                                viewModel.fetchSummonerInfo(query)
-                            }
-                        },
-                        enabled = query.isNotBlank()
+                        onClick = onSearch,
+                        enabled = searchQuery.isNotBlank(),
                     ) {
                         Text(stringResource(R.string.search))
                     }
                 }
             }
-            
-            // Summoner Info section
-            if (summonerResult.isNotBlank()) {
+
+            if (searchCandidates.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Column(
+                SearchCandidatesSection(
+                    candidates = searchCandidates,
+                    onCandidateClick = { candidate ->
+                        searchQuery = "${candidate.gameName}#${candidate.tagLine}"
+                        viewModel.selectSearchCandidate(candidate)
+                        keyboardController?.hide()
+                    },
+                )
+            }
+
+            if (accountResult.isNotBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                InfoCardSection(
+                    title = stringResource(R.string.account_info),
+                    body = accountResult,
+                )
+            }
+
+            if (summonerByPuuidResult.isNotBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                InfoCardSection(
+                    title = stringResource(R.string.summoner_info),
+                    body = summonerByPuuidResult,
+                )
+            }
+
+            if (leagueEntriesResult.isNotBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                InfoCardSection(
+                    title = stringResource(R.string.ranked),
+                    body = leagueEntriesResult,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun RotationChampionsSection(
+    title: String,
+    rotationChampions: List<Pair<String, String?>>,
+    emptyMessage: String = "—",
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+    ) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(12.dp),
+                )
+                .border(
+                    width = 2.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(12.dp),
+                ),
+        ) {
+            if (rotationChampions.isEmpty()) {
+                Text(
+                    text = emptyMessage,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .padding(horizontal = 12.dp, vertical = 24.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    fontSize = 14.sp,
+                )
+            } else {
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp)
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(
-                        text = stringResource(R.string.summoner_info),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                    
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
-                                shape = RoundedCornerShape(12.dp)
+                    items(rotationChampions.take(20)) { (name, imagePath) ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.width(80.dp),
+                        ) {
+                            ChampionImageLoader(
+                                imagePath = imagePath,
+                                name = name,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .aspectRatio(1f),
                             )
-                            .border(
-                                width = 2.dp,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                shape = RoundedCornerShape(12.dp)
+                            Text(
+                                text = name,
+                                modifier = Modifier.padding(top = 4.dp),
+                                fontSize = 10.sp,
                             )
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = summonerResult,
-                            fontSize = 14.sp
-                        )
+                        }
                     }
                 }
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun SearchCandidatesSection(
+    candidates: List<AccountDto>,
+    onCandidateClick: (AccountDto) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.account_candidates),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(12.dp),
+                )
+                .border(
+                    width = 2.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(12.dp),
+                )
+                .padding(vertical = 4.dp),
+        ) {
+            Column {
+                candidates.forEachIndexed { index, candidate ->
+                    if (index > 0) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                        )
+                    }
+                    Text(
+                        text = "${candidate.gameName}#${candidate.tagLine}",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onCandidateClick(candidate) }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        fontSize = 14.sp,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InfoCardSection(title: String, body: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+    ) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(12.dp),
+                )
+                .border(
+                    width = 2.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(12.dp),
+                )
+                .padding(16.dp),
+        ) {
+            Text(text = body, fontSize = 14.sp)
         }
     }
 }

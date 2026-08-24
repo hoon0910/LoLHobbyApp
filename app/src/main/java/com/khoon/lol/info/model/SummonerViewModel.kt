@@ -6,11 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khoon.lol.info.BuildConfig
 import com.khoon.lol.info.R
-import com.khoon.lol.info.data.api.LeagueOfLegendAPI
+import com.khoon.lol.info.data.api.AccountDto
 import com.khoon.lol.info.data.api.MockLoLApi
 import com.khoon.lol.info.data.repository.ChampionRepository
 import com.khoon.lol.info.di.DispatcherModule
-import com.khoon.lol.info.utils.constant.AppConstant.API_KEY
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,13 +21,9 @@ import javax.inject.Inject
 @HiltViewModel
 class SummonerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val riotApiService: LeagueOfLegendAPI,
     private val mockLoLApi: MockLoLApi,
     private val championRepository: ChampionRepository,
 ) : ViewModel() {
-
-    private val _result = MutableStateFlow<String>("")
-    val result = _result.asStateFlow()
 
     private val _accountResult = MutableStateFlow("")
     val accountResult = _accountResult.asStateFlow()
@@ -36,79 +31,185 @@ class SummonerViewModel @Inject constructor(
     private val _summonerByPuuidResult = MutableStateFlow("")
     val summonerByPuuidResult = _summonerByPuuidResult.asStateFlow()
 
+    private val _leagueEntriesResult = MutableStateFlow("")
+    val leagueEntriesResult = _leagueEntriesResult.asStateFlow()
+
+    private val _searchCandidates = MutableStateFlow<List<AccountDto>>(emptyList())
+    val searchCandidates: StateFlow<List<AccountDto>> = _searchCandidates.asStateFlow()
+
     private val _rotationChampions = MutableStateFlow<List<Pair<String, String?>>>(emptyList())
     val rotationChampions: StateFlow<List<Pair<String, String?>>> = _rotationChampions.asStateFlow()
 
-    fun fetchAccountByRiotId(riotId: String) {
-        viewModelScope.launch(DispatcherModule.provideIoDispatcher()) {
-            _summonerByPuuidResult.value = ""
+    private val _newPlayerRotationChampions =
+        MutableStateFlow<List<Pair<String, String?>>>(emptyList())
+    val newPlayerRotationChampions: StateFlow<List<Pair<String, String?>>> =
+        _newPlayerRotationChampions.asStateFlow()
 
-            val parsed = parseRiotId(riotId)
-            if (parsed == null) {
-                _accountResult.value = context.getString(R.string.invalid_riot_id)
-                return@launch
-            }
-            val (gameName, tagLine) = parsed
+    private val _rotationError = MutableStateFlow<String?>(null)
+    val rotationError: StateFlow<String?> = _rotationError.asStateFlow()
+
+    /** Name only → mock search list; Name#Tag → Account → Summoner → League. */
+    fun searchRiotId(input: String, region: String) {
+        viewModelScope.launch(DispatcherModule.provideIoDispatcher()) {
+            clearSearchResults()
+
+            val trimmed = input.trim()
+            if (trimmed.isEmpty()) return@launch
 
             if (!BuildConfig.USE_MOCK_SERVER) {
-                _accountResult.value = context.getString(R.string.account_riot_id_stg_only)
+                _accountResult.value = context.getString(R.string.summoner_search_stg_only)
                 return@launch
             }
 
-            try {
-                Log.d("khoon", "Account by Riot ID: $gameName#$tagLine → ${BuildConfig.MOCK_BASE_URL}")
-                val accountResponse = mockLoLApi.getAccountByRiotId(gameName, tagLine)
-                if (!accountResponse.isSuccessful) {
-                    _accountResult.value = context.getString(
-                        R.string.api_error,
-                        accountResponse.code(),
-                        accountResponse.errorBody()?.string().orEmpty()
-                    )
-                    return@launch
-                }
-
-                val account = accountResponse.body()
-                _accountResult.value = context.getString(
-                    R.string.account_info_format,
-                    account?.gameName.orEmpty(),
-                    account?.tagLine.orEmpty(),
-                    account?.puuid.orEmpty()
-                )
-
-                val puuid = account?.puuid
-                if (puuid.isNullOrBlank()) {
-                    _summonerByPuuidResult.value = context.getString(R.string.summoner_lookup_skipped)
-                    return@launch
-                }
-
-                Log.d("khoon", "Summoner by puuid: $puuid")
-                val summonerResponse = mockLoLApi.getSummonerByPuuid(puuid)
-                if (summonerResponse.isSuccessful) {
-                    val summoner = summonerResponse.body()
-                    _summonerByPuuidResult.value = context.getString(
-                        R.string.summoner_by_puuid_format,
-                        summoner?.summonerLevel?.toString().orEmpty(),
-                        summoner?.profileIconId?.toString().orEmpty(),
-                        summoner?.id.orEmpty(),
-                        summoner?.accountId.orEmpty(),
-                        summoner?.puuid.orEmpty()
-                    )
-                } else {
-                    _summonerByPuuidResult.value = context.getString(
-                        R.string.summoner_api_error,
-                        summonerResponse.code(),
-                        summonerResponse.errorBody()?.string().orEmpty()
-                    )
-                }
-            } catch (e: Exception) {
-                Log.e("khoon", "Account by Riot ID failed: ${e.message}", e)
-                _accountResult.value = context.getString(R.string.network_error, e.message.orEmpty())
-                _summonerByPuuidResult.value = ""
+            if (trimmed.contains('#')) {
+                fetchAccountAndSummoner(trimmed)
+            } else {
+                searchAccountsByName(trimmed, region)
             }
         }
     }
 
-    /** Split "Name#Tag" into gameName / tagLine. */
+    fun selectSearchCandidate(candidate: AccountDto) {
+        searchRiotId("${candidate.gameName}#${candidate.tagLine}", region = "")
+    }
+
+    private suspend fun searchAccountsByName(gameName: String, region: String) {
+        try {
+            Log.d("khoon", "Account search: q=$gameName region=$region")
+            val response = mockLoLApi.searchAccounts(gameName, region.ifBlank { null })
+            if (!response.isSuccessful) {
+                val err = context.getString(
+                    R.string.search_error,
+                    response.code(),
+                    response.errorBody()?.string().orEmpty(),
+                )
+                Log.d("khoon", err)
+                _accountResult.value = err
+                return
+            }
+            val candidates = response.body().orEmpty()
+            _searchCandidates.value = candidates
+            Log.d("khoon", "Account search candidates=${candidates.size}: $candidates")
+            if (candidates.isEmpty()) {
+                _accountResult.value = context.getString(R.string.no_accounts_found, gameName)
+            }
+        } catch (e: Exception) {
+            Log.e("khoon", "Account search failed: ${e.message}", e)
+            _accountResult.value = context.getString(R.string.network_error, e.message.orEmpty())
+        }
+    }
+
+    private suspend fun fetchAccountAndSummoner(riotId: String) {
+        _searchCandidates.value = emptyList()
+
+        val parsed = parseRiotId(riotId)
+        if (parsed == null) {
+            _accountResult.value = context.getString(R.string.invalid_riot_id)
+            return
+        }
+        val (gameName, tagLine) = parsed
+
+        try {
+            Log.d("khoon", "Account by Riot ID: $gameName#$tagLine → ${BuildConfig.MOCK_BASE_URL}")
+            val accountResponse = mockLoLApi.getAccountByRiotId(gameName, tagLine)
+            if (!accountResponse.isSuccessful) {
+                _accountResult.value = context.getString(
+                    R.string.api_error,
+                    accountResponse.code(),
+                    accountResponse.errorBody()?.string().orEmpty(),
+                )
+                return
+            }
+
+            val account = accountResponse.body()
+            _accountResult.value = context.getString(
+                R.string.account_info_format,
+                account?.gameName.orEmpty(),
+                account?.tagLine.orEmpty(),
+                account?.puuid.orEmpty(),
+            )
+
+            val puuid = account?.puuid
+            if (puuid.isNullOrBlank()) {
+                _summonerByPuuidResult.value = context.getString(R.string.summoner_lookup_skipped)
+                return
+            }
+
+            Log.d("khoon", "Summoner by puuid: $puuid")
+            val summonerResponse = mockLoLApi.getSummonerByPuuid(puuid)
+            if (summonerResponse.isSuccessful) {
+                val summoner = summonerResponse.body()
+                _summonerByPuuidResult.value = buildString {
+                    append("summonerLevel: ${summoner?.summonerLevel}\n")
+                    append("profileIconId: ${summoner?.profileIconId}\n")
+                    append("puuid: ${summoner?.puuid}")
+                    if (!summoner?.id.isNullOrBlank()) {
+                        append("\nid: ${summoner?.id}")
+                    }
+                    if (!summoner?.accountId.isNullOrBlank()) {
+                        append("\naccountId: ${summoner?.accountId}")
+                    }
+                }
+                fetchLeagueEntriesByPuuid(puuid)
+            } else {
+                _summonerByPuuidResult.value = context.getString(
+                    R.string.summoner_api_error,
+                    summonerResponse.code(),
+                    summonerResponse.errorBody()?.string().orEmpty(),
+                )
+                _leagueEntriesResult.value = ""
+            }
+        } catch (e: Exception) {
+            Log.e("khoon", "Account by Riot ID failed: ${e.message}", e)
+            _accountResult.value = context.getString(R.string.network_error, e.message.orEmpty())
+            _summonerByPuuidResult.value = ""
+            _leagueEntriesResult.value = ""
+        }
+    }
+
+    private suspend fun fetchLeagueEntriesByPuuid(puuid: String) {
+        try {
+            Log.d("khoon", "League entries by puuid: $puuid")
+            val response = mockLoLApi.getLeagueEntriesByPuuid(puuid)
+            if (!response.isSuccessful) {
+                _leagueEntriesResult.value = context.getString(
+                    R.string.api_error,
+                    response.code(),
+                    response.errorBody()?.string().orEmpty(),
+                )
+                return
+            }
+            val entries = response.body().orEmpty()
+            if (entries.isEmpty()) {
+                _leagueEntriesResult.value = context.getString(R.string.unranked)
+                return
+            }
+            _leagueEntriesResult.value = entries.joinToString(separator = "\n\n") { entry ->
+                buildString {
+                    append(queueLabel(entry.queueType))
+                    append(": ${entry.tier} ${entry.rank} (${entry.leaguePoints} LP)\n")
+                    append("W/L: ${entry.wins}/${entry.losses}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("khoon", "League entries failed: ${e.message}", e)
+            _leagueEntriesResult.value = context.getString(R.string.network_error, e.message.orEmpty())
+        }
+    }
+
+    private fun queueLabel(queueType: String): String = when (queueType) {
+        "RANKED_SOLO_5x5" -> "Solo/Duo"
+        "RANKED_FLEX_SR" -> "Flex"
+        else -> queueType
+    }
+
+    private fun clearSearchResults() {
+        _accountResult.value = ""
+        _summonerByPuuidResult.value = ""
+        _leagueEntriesResult.value = ""
+        _searchCandidates.value = emptyList()
+    }
+
     private fun parseRiotId(raw: String): Pair<String, String>? {
         val trimmed = raw.trim()
         val hash = trimmed.indexOf('#')
@@ -119,86 +220,49 @@ class SummonerViewModel @Inject constructor(
         return gameName to tagLine
     }
 
-    fun fetchSummonerInfo(name: String) {
-        val in_name = name
-        viewModelScope.launch(DispatcherModule.provideIoDispatcher()) {
-            try {
-                Log.d("khoon", "=== API Call Debug Info ===")
-                Log.d("khoon", "Summoner name: $in_name")
-                Log.d("khoon", "API key: ${API_KEY}")
-                Log.d("khoon", "Base URL: https://kr.api.riotgames.com/lol/")
-                Log.d("khoon", "Full endpoint: summoner/v4/summoners/by-name/$in_name")
-
-                // 먼저 champion rotation API로 API 키 테스트
-                Log.d("khoon", "Testing API key with champion rotation...")
-                val rotationResponse = riotApiService.getChampionRotation(API_KEY)
-                Log.d("khoon", "Champion rotation response code: ${rotationResponse.code()}")
-
-                val response = riotApiService.getSummoner(summonerName = in_name, API_KEY)
-
-                Log.d("khoon", "Response code: ${response.code()}")
-                Log.d("khoon", "Response headers: ${response.headers()}")
-
-                if (response.isSuccessful) {
-                    Log.d("khoon", "API call successful")
-                    val dto = response.body()
-                    _result.value = context.getString(
-                        R.string.summoner_result_format,
-                        in_name,
-                        dto?.summonerLevel?.toString().orEmpty(),
-                        dto?.id.orEmpty()
-                    )
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("khoon", "=== API Error Details ===")
-                    Log.e("khoon", "Error code: ${response.code()}")
-                    Log.e("khoon", "Error body: $errorBody")
-                    Log.e("khoon", "Error headers: ${response.headers()}")
-
-                    _result.value = context.getString(
-                        R.string.summoner_api_error_with_body,
-                        response.code(),
-                        errorBody.orEmpty()
-                    )
-                }
-            } catch (e: Exception) {
-                Log.e("khoon", "=== Network Exception ===")
-                Log.e("khoon", "Exception type: ${e.javaClass.simpleName}")
-                Log.e("khoon", "Exception message: ${e.message}")
-                e.printStackTrace()
-
-                _result.value = context.getString(R.string.network_error, e.message.orEmpty())
-            }
-        }
-    }
-
     fun fetchRotationChampions() {
         Log.d("khoon", "called fetchRotationChampions USE_MOCK_SERVER=${BuildConfig.USE_MOCK_SERVER}")
 
         viewModelScope.launch(DispatcherModule.provideIoDispatcher()) {
-            val result = if (BuildConfig.USE_MOCK_SERVER) {
+            _rotationError.value = null
+            val rows = if (BuildConfig.USE_MOCK_SERVER) {
                 fetchRotationFromMock()
             } else {
                 championRepository.fetchRotationChampionImages()
             }
-            _rotationChampions.value = result
+            _rotationChampions.value = rows.freeRotation
+            _newPlayerRotationChampions.value = rows.newPlayerRotation
+            if (rows.freeRotation.isEmpty() && rows.newPlayerRotation.isEmpty() && _rotationError.value == null) {
+                _rotationError.value = context.getString(
+                    R.string.rotation_unavailable,
+                    BuildConfig.MOCK_BASE_URL,
+                )
+            }
         }
     }
 
-    private suspend fun fetchRotationFromMock(): List<Pair<String, String?>> {
+    private suspend fun fetchRotationFromMock(): RotationChampionRows {
         return try {
             val response = mockLoLApi.getChampionRotation()
             Log.d("khoon", "mock rotation code: ${response.code()}")
             if (!response.isSuccessful) {
-                Log.e("khoon", "mock rotation failed: ${response.errorBody()?.string()}")
-                return emptyList()
+                val err = response.errorBody()?.string().orEmpty()
+                Log.e("khoon", "mock rotation failed: $err")
+                _rotationError.value = context.getString(R.string.api_error, response.code(), err)
+                return RotationChampionRows()
             }
-            val ids = response.body()?.freeChampionIds.orEmpty()
-            Log.d("khoon", "mock rotation ids: $ids")
-            championRepository.resolveRotationImages(ids)
+            val body = response.body()
+            val freeIds = body?.freeChampionIds.orEmpty()
+            val newPlayerIds = body?.freeChampionIdsForNewPlayers.orEmpty()
+            Log.d("khoon", "mock rotation sr=$freeIds newplayer=$newPlayerIds")
+            RotationChampionRows(
+                freeRotation = championRepository.resolveRotationImages(freeIds),
+                newPlayerRotation = championRepository.resolveRotationImages(newPlayerIds),
+            )
         } catch (e: Exception) {
             Log.e("khoon", "mock rotation exception: ${e.message}", e)
-            emptyList()
+            _rotationError.value = context.getString(R.string.network_error, e.message.orEmpty())
+            RotationChampionRows()
         }
     }
 }
