@@ -31,6 +31,8 @@ interface ChampionRepository {
     suspend fun saveChampionImage(championName: String, version: String)
     suspend fun getChampionDetail(name: String): ChampionDetail?
     suspend fun fetchRotationChampionImages(): List<Pair<String, String?>>
+    /** Map free-rotation champion IDs to name + local image path (DataDragon + DB). */
+    suspend fun resolveRotationImages(freeChampionIds: List<Int>): List<Pair<String, String?>>
 }
 
 @Singleton
@@ -280,87 +282,81 @@ class ChampionRepositoryImpl @Inject constructor(
             if (response.errorBody() != null) {
                 Log.d(TAG, "errorBody: ${response.errorBody()?.string()}")
             }
-            if (response.isSuccessful) {
-                Log.d(TAG, "success")
-            } else {
-                Log.d(TAG, "failed")
-            }
-
             if (!response.isSuccessful) return@withContext emptyList()
 
             val freeIds = response.body()?.freeChampionIds ?: emptyList()
-            val version = runCatching { dataDragonApiService.getVersions().body()
-                ?.firstOrNull() }.getOrNull() ?: "13.9.1"
+            resolveRotationImages(freeIds)
+        }
+    }
+
+    override suspend fun resolveRotationImages(
+        freeChampionIds: List<Int>
+    ): List<Pair<String, String?>> {
+        return withContext(DispatcherModule.provideIoDispatcher()) {
+            if (freeChampionIds.isEmpty()) return@withContext emptyList()
+
+            val version = runCatching {
+                dataDragonApiService.getVersions().body()?.firstOrNull()
+            }.getOrNull() ?: "13.9.1"
 
             val result = mutableListOf<Pair<String, String?>>()
-            for (id in freeIds) {
-                val name = getChampionNameByIdFromDataDragon(id, version)
-                if (name != null) {
-                    val championWithImage = getChampionWithImage(name, version)
-                    result.add(championWithImage)
-                    Log.d(TAG, "[RESULT] name=${championWithImage.first}, imagePath=${championWithImage.second}")
+            for (id in freeChampionIds) {
+                val champion = getChampionIdAndDisplayName(id, version)
+                if (champion != null) {
+                    // Image/DB key = DataDragon id (LeeSin); UI label = display name (Lee Sin)
+                    val imagePath = getChampionImagePath(champion.id, version)
+                    result.add(champion.displayName to imagePath)
+                    Log.d(TAG, "[RESULT] display=${champion.displayName}, id=${champion.id}, imagePath=$imagePath")
                 } else {
                     result.add(id.toString() to null)
-                    Log.d(TAG, "[RESULT] name=${id.toString()}, imagePath=null (not found)")
+                    Log.d(TAG, "[RESULT] name=$id, imagePath=null (not found)")
                 }
             }
             result
         }
     }
 
-    // For rotation champions - only check image
-    private suspend fun getChampionWithImage(name: String, version: String): Pair<String, String?> {
-        val champion = championDao.getChampionByName(name)
+    // For rotation champions - only check image (championId = DataDragon map key)
+    private suspend fun getChampionImagePath(championId: String, version: String): String? {
+        val champion = championDao.getChampionByName(championId)
         return if (champion?.imagePath != null) {
-            Log.d(TAG, "[DB] name=$name, imagePath=${champion.imagePath}")
-            name to champion.imagePath
+            Log.d(TAG, "[DB] id=$championId, imagePath=${champion.imagePath}")
+            champion.imagePath
         } else {
-            Log.d(TAG, "[DD] name=$name, version=$version (saving new image)")
-            val imagePath = saveChampionImageAndReturnPath(name, version)
-            name to imagePath
+            Log.d(TAG, "[DD] id=$championId, version=$version (saving new image)")
+            saveChampionImageAndReturnPath(championId, version)
         }
     }
 
+    private data class ChampionIdDisplay(
+        val id: String,
+        val displayName: String,
+    )
 
-    private suspend fun fetchChampionDetailFromAPI(name: String): ChampionDetail? {
-        return try {
-            val versionResponse = dataDragonApiService.getVersions()
-            val version = versionResponse.body()?.firstOrNull() ?: "13.9.1"
-            val response = dataDragonApiService.getChampionDetail(version, name)
-            val detail = response.data[name]
-            
-            if (detail != null) {
-                // Save to DB
-                val champion = championDao.getChampionByName(name)
-                val championEntity = if (champion != null) {
-                    champion.copy(detail = detail)
-                } else {
-                    ChampionEntity(name = name, detail = detail)
-                }
-                championDao.insert(championEntity)
-                detail
-            } else null
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to fetch champion detail: ${e.message}")
-            null
-        }
-    }
-
-    private suspend fun getChampionNameByIdFromDataDragon(id: Int, version: String): String? {
+    private suspend fun getChampionIdAndDisplayName(id: Int, version: String): ChampionIdDisplay? {
         return try {
             val response = dataDragonApiService.getChampionData(version)
             if (response.isSuccessful) {
-                val name = response.body()?.data?.values?.find { it.key == id.toString() }?.name
-               Log.d("ChampionRepository",
-                   "[getChampionNameByIdFromDataDragon] " +
-                           "id=$id, version=$version, result=$name")
-                name
+                val entry = response.body()?.data?.entries
+                    ?.find { it.value.key == id.toString() }
+                if (entry != null) {
+                    ChampionIdDisplay(id = entry.key, displayName = entry.value.name).also {
+                        Log.d(
+                            "ChampionRepository",
+                            "[getChampionIdAndDisplayName] id=$id, key=${it.id}, name=${it.displayName}"
+                        )
+                    }
+                } else {
+                    null
+                }
             } else {
                 null
             }
         } catch (e: Exception) {
-            Log.e("ChampionRepository", "[getChampionNameByIdFromDataDragon]" +
-                    " id=$id, version=$version, error=${e.message}")
+            Log.e(
+                "ChampionRepository",
+                "[getChampionIdAndDisplayName] id=$id, version=$version, error=${e.message}"
+            )
             null
         }
     }

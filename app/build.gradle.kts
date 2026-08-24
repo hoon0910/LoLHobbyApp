@@ -1,9 +1,27 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
+fun normalizeMockBaseUrl(raw: String): String {
+    val trimmed = raw.trim().trimEnd('/')
+    return "$trimmed/"
+}
+
+val mockBaseUrl = normalizeMockBaseUrl(
+    localProperties.getProperty("mock.base.url") ?: "http://10.0.2.2:8080"
+)
 
 android {
     namespace = "com.khoon.lol.info"
@@ -20,6 +38,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -28,6 +49,25 @@ android {
             )
         }
     }
+
+    flavorDimensions += "env"
+    productFlavors {
+        create("stg") {
+            dimension = "env"
+            isDefault = true
+            applicationIdSuffix = ".stg"
+            versionNameSuffix = "-stg"
+            resValue("string", "app_name", "LoL Info STG")
+            buildConfigField("String", "MOCK_BASE_URL", "\"$mockBaseUrl\"")
+            buildConfigField("boolean", "USE_MOCK_SERVER", "true")
+        }
+        create("prod") {
+            dimension = "env"
+            buildConfigField("String", "MOCK_BASE_URL", "\"http://127.0.0.1/\"")
+            buildConfigField("boolean", "USE_MOCK_SERVER", "false")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -35,6 +75,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

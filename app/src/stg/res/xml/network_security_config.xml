@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- stg only: allow HTTP to LAN mock (emulator 10.0.2.2 or PC IP from local.properties) -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

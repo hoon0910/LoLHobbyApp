@@ -1,6 +1,10 @@
 package com.khoon.lol.info.ui.screens
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -36,19 +40,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.khoon.lol.info.model.SummonerViewModel
 import com.khoon.lol.info.ui.components.ChampionImageLoader
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
     var query by remember { mutableStateOf("") }
+    var riotIdQuery by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
+    val riotIdFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     
     val servers = listOf(
         "NA", "EUW", "EUNE", "KR", "JP", "OCE", "LAN", "LAS", "TR", "BR", "RU", "SEA", "ME", "VN", "TW", "SG", "CN", "PH", "TH", "PBE"
@@ -56,11 +69,16 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
     var selectedServer by remember { mutableStateOf(servers[3]) } // Default: KR
 
     val rotationChampions by viewModel.rotationChampions.collectAsState()
+    val accountResult by viewModel.accountResult.collectAsState()
+    val summonerByPuuidResult by viewModel.summonerByPuuidResult.collectAsState()
     val summonerResult by viewModel.result.collectAsState()
 
     // Load rotation champions on first entry
     LaunchedEffect(Unit) {
         viewModel.fetchRotationChampions()
+        delay(100.milliseconds)
+        riotIdFocusRequester.requestFocus()
+        keyboardController?.show()
     }
 
     Box(
@@ -70,6 +88,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -130,6 +149,130 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                 }
             }
             
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Account by Riot ID (new — between Rotation and Search a Summoner)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Account by Riot ID",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = riotIdQuery,
+                        onValueChange = { riotIdQuery = it },
+                        label = { Text("Riot ID") },
+                        placeholder = { Text("Name#Tag") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                            .focusRequester(riotIdFocusRequester),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                if (riotIdQuery.isNotBlank()) {
+                                    viewModel.fetchAccountByRiotId(riotIdQuery)
+                                    keyboardController?.hide()
+                                }
+                            }
+                        ),
+                    )
+                    Button(
+                        onClick = {
+                            if (riotIdQuery.isNotBlank()) {
+                                viewModel.fetchAccountByRiotId(riotIdQuery)
+                            }
+                        },
+                        enabled = riotIdQuery.isNotBlank()
+                    ) {
+                        Text("Search")
+                    }
+                }
+            }
+
+            if (accountResult.isNotBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "Account Info",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = accountResult,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
+            if (summonerByPuuidResult.isNotBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "Summoner Info",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = summonerByPuuidResult,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
             
             // Search Summoner section

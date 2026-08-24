@@ -19,6 +19,7 @@
         <activity
             android:name="com.khoon.lol.info.LoLMain"
             android:exported="true"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.Lol.info_app">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

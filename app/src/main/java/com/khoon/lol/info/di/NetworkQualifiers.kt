@@ -8,4 +8,8 @@ annotation class RiotApiClient
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class DataDragonClient 
+annotation class DataDragonClient
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class MockApiClient

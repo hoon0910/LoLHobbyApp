@@ -1,7 +1,9 @@
 package com.khoon.lol.info.di
 
+import com.khoon.lol.info.BuildConfig
 import com.khoon.lol.info.data.api.DataDragonAPI
 import com.khoon.lol.info.data.api.LeagueOfLegendAPI
+import com.khoon.lol.info.data.api.MockLoLApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +17,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://kr.api.riotgames.com/lol/"
+    private const val RIOT_BASE_URL = "https://kr.api.riotgames.com/lol/"
     private const val DDRAGON_URL = "https://ddragon.leagueoflegends.com/"
 
     @Provides
@@ -39,7 +41,18 @@ object NetworkModule {
     @RiotApiClient
     fun provideRiotApiClient(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(RIOT_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @MockApiClient
+    fun provideMockApiClient(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.MOCK_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -66,5 +79,11 @@ object NetworkModule {
     @Singleton
     fun provideDataDragonApiService(@DataDragonClient retrofit: Retrofit): DataDragonAPI {
         return retrofit.create(DataDragonAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMockLoLApi(@MockApiClient retrofit: Retrofit): MockLoLApi {
+        return retrofit.create(MockLoLApi::class.java)
     }
 } 
