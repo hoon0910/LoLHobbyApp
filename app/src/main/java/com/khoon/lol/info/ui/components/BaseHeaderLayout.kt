@@ -11,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.khoon.lol.info.R
 
 @Composable
 fun BaseHeaderLayout(
@@ -49,7 +51,7 @@ fun BaseHeaderLayout(
             GradientIconButton(
                 onClick = onToggleFavorites,
                 icon = if (showOnlyFavorites) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                contentDescription = "Filter Favorites",
+                contentDescription = stringResource(R.string.cd_filter_favorites),
                 isActive = showOnlyFavorites
             )
         }

@@ -1,3 +1,67 @@
 <resources>
     <string name="app_name">lol_info_app</string>
+    <string name="app_bar_title">LOL COMPOSE</string>
+    <string name="app_bar_detail_fallback">LOL DETAIL</string>
+
+    <string name="cd_splash">Splash</string>
+    <string name="cd_go_to_summoner_page">Go to Summoner Page</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="cd_close_search">Close Search</string>
+    <string name="cd_favorite">Favorite</string>
+    <string name="cd_filter_favorites">Filter Favorites</string>
+    <string name="cd_champion_image">Champion Image</string>
+    <string name="cd_scroll_to_top">Scroll to top</string>
+    <string name="cd_back">Back</string>
+
+    <string name="search_champions_placeholder">Search champions...</string>
+    <string name="no_champion">No Champion</string>
+    <string name="loading">Loading...</string>
+
+    <string name="tab_info">Info</string>
+    <string name="tab_stats">Stats</string>
+    <string name="tab_skills">Skills</string>
+
+    <string name="stat_difficulty">Difficulty</string>
+    <string name="stat_attack">Attack</string>
+    <string name="stat_magic">Magic</string>
+    <string name="stat_defence">Defence</string>
+    <string name="stat_hp">HP</string>
+    <string name="stat_mp">MP</string>
+    <string name="stat_attack_damage">Attack Damage</string>
+    <string name="stat_armor">Armor</string>
+
+    <string name="skill_info_unavailable">Skill information not available.</string>
+    <string name="skill_passive">Passive</string>
+    <string name="passive_with_name">Passive: %1$s</string>
+    <string name="spell_name_format">%1$s - %2$s</string>
+    <string name="skill_key_p">P</string>
+    <string name="skill_key_q">Q</string>
+    <string name="skill_key_w">W</string>
+    <string name="skill_key_e">E</string>
+    <string name="skill_key_r">R</string>
+    <string name="skill_generic">Spell</string>
+    <string name="skill_key_unknown">?</string>
+
+    <string name="rotation_champions">Rotation Champions</string>
+    <string name="account_by_riot_id">Account by Riot ID</string>
+    <string name="label_riot_id">Riot ID</string>
+    <string name="placeholder_riot_id">Name#Tag</string>
+    <string name="search">Search</string>
+    <string name="account_info">Account Info</string>
+    <string name="summoner_info">Summoner Info</string>
+    <string name="search_a_summoner">Search a Summoner</string>
+    <string name="label_server">Server</string>
+    <string name="label_summoner_name">Summoner Name</string>
+
+    <string name="invalid_riot_id">Invalid Riot ID. Use Name#Tag (e.g. Faker#KR1)</string>
+    <string name="account_riot_id_stg_only">Account by Riot ID is available in stg (mock) only</string>
+    <string name="api_error">API error: %1$d\n%2$s</string>
+    <string name="summoner_api_error">Summoner API error: %1$d\n%2$s</string>
+    <string name="network_error">Network error: %1$s</string>
+    <string name="summoner_lookup_skipped">Summoner lookup skipped: missing puuid</string>
+    <string name="account_info_format">gameName: %1$s\ntagLine: %2$s\npuuid: %3$s</string>
+    <string name="summoner_by_puuid_format">summonerLevel: %1$s\nprofileIconId: %2$s\nid: %3$s\naccountId: %4$s\npuuid: %5$s</string>
+    <string name="summoner_result_format">Name: %1$s\nLevel: %2$s\nID: %3$s</string>
+    <string name="error_with_message">Error: %1$s</string>
 </resources>

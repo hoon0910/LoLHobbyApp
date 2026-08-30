@@ -11,11 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext // For ImageRequest
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage // Coil import
 import coil.request.ImageRequest // Coil import
+import com.khoon.lol.info.R
 import com.khoon.lol.info.model.ChampionDetail
 // import com.khoon.lol.info.R // If using a local drawable for error
 
@@ -33,12 +35,12 @@ fun ChampionSkillsSection(
             .padding(vertical = 8.dp)
     ) {
         if (detail == null) {
-            Text("Skill information not available.")
+            Text(stringResource(R.string.skill_info_unavailable))
             return
         }
 
         Text(
-            "Skills",
+            stringResource(R.string.tab_skills),
             style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
             fontSize = 24.sp,
             modifier = Modifier.padding(bottom = 16.dp, start = 8.dp)
@@ -67,21 +69,26 @@ fun ChampionSkillsSection(
                             CircularProgressIndicator(modifier = Modifier.size(36.dp))
                         },
                         error = {
-                            Text("P", color = Color.Red, fontSize = 24.sp)
+                            Text(stringResource(R.string.skill_key_p), color = Color.Red, fontSize = 24.sp)
                             Log.e("SkillIconError", "Passive: Failed to load ${passive.image?.full}, URL: $passiveImageUrl, Error: ${it.result.throwable}")
                         }
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(passive.name, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
-                        Text("Passive", fontSize = 13.sp, color = Color.Gray)
+                        Text(stringResource(R.string.skill_passive), fontSize = 13.sp, color = Color.Gray)
                     }
                 }
             }
         }
 
         // Active Spells (Q, W, E, R)
-        val spellKeys = listOf("Q", "W", "E", "R")
+        val spellKeys = listOf(
+            stringResource(R.string.skill_key_q),
+            stringResource(R.string.skill_key_w),
+            stringResource(R.string.skill_key_e),
+            stringResource(R.string.skill_key_r)
+        )
         detail.spells?.forEachIndexed { index, spell ->
             val spellImageUrl = spell.image?.full?.let {
                 "https://ddragon.leagueoflegends.com/cdn/$ddragonVersion/img/spell/$it" // Changed to HTTPS
@@ -108,13 +115,25 @@ fun ChampionSkillsSection(
                             CircularProgressIndicator(modifier = Modifier.size(36.dp))
                         },
                         error = {
-                            Text(spellKeys.getOrElse(index) { "?" }, color = Color.Red, fontSize = 24.sp)
+                            Text(
+                                spellKeys.getOrElse(index) { stringResource(R.string.skill_key_unknown) },
+                                color = Color.Red,
+                                fontSize = 24.sp
+                            )
                             Log.e("SkillIconError", "Spell '${spell.name}': Failed to load ${spell.image?.full}, URL: $spellImageUrl, Error: ${it.result.throwable}")
                         }
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("${spellKeys.getOrElse(index) { "Spell" }} - ${spell.name}", fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+                        Text(
+                            stringResource(
+                                R.string.spell_name_format,
+                                spellKeys.getOrElse(index) { stringResource(R.string.skill_generic) },
+                                spell.name
+                            ),
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 17.sp
+                        )
                     }
                 }
             }

@@ -7,8 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.khoon.lol.info.R
 import com.khoon.lol.info.model.ChampionDetail
 
 @Composable
@@ -21,7 +23,7 @@ fun StatsSection(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Stats",
+            stringResource(R.string.tab_stats),
             style = MaterialTheme.typography.titleLarge,
             fontSize = 24.sp,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -32,28 +34,30 @@ fun StatsSection(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             CircularStatItem(
-                title = "HP",
+                title = stringResource(R.string.stat_hp),
                 value = detail?.stats?.hp ?: 0f,
                 color = Color(0xFF4CAF50),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                maxValue = MAX_HP_MP
             )
 
             CircularStatItem(
-                title = "MP",
+                title = stringResource(R.string.stat_mp),
                 value = detail?.stats?.mp ?: 0f,
                 color = Color(0xFF2196F3),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                maxValue = MAX_HP_MP
             )
 
             CircularStatItem(
-                title = "Attack Damage",
+                title = stringResource(R.string.stat_attack_damage),
                 value = detail?.stats?.attackdamage ?: 0f,
                 color = Color(0xFFE91E63),
                 modifier = Modifier.weight(1f)
             )
 
             CircularStatItem(
-                title = "Armor",
+                title = stringResource(R.string.stat_armor),
                 value = detail?.stats?.armor ?: 0f,
                 color = Color(0xFFFF9800),
                 modifier = Modifier.weight(1f)

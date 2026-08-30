@@ -10,21 +10,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private const val MAX_HP_MP = 1000f
-private const val MAX_ATTACK_ARMOR = 200f
+internal const val MAX_HP_MP = 1000f
+internal const val MAX_ATTACK_ARMOR = 200f
 
 @Composable
 fun CircularStatItem(
     title: String,
     value: Float,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    maxValue: Float = MAX_ATTACK_ARMOR
 ) {
-    val maxValue = when (title) {
-        "HP", "MP" -> MAX_HP_MP
-        else -> MAX_ATTACK_ARMOR
-    }
-
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally

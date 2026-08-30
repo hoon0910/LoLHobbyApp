@@ -7,8 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.khoon.lol.info.R
 import com.khoon.lol.info.model.ChampionDetail
 
 @Composable
@@ -21,14 +23,14 @@ fun InfoSection(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Info",
+            stringResource(R.string.tab_info),
             style = MaterialTheme.typography.titleLarge,
             fontSize = 24.sp,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         InfoStatItem(
-            title = "Difficulty",
+            title = stringResource(R.string.stat_difficulty),
             value = detail?.info?.difficulty ?: 0,
             color = Color(0xFFE91E63),
             modifier = Modifier.fillMaxWidth()
@@ -37,7 +39,7 @@ fun InfoSection(
         Spacer(modifier = Modifier.height(20.dp))
 
         InfoStatItem(
-            title = "Attack",
+            title = stringResource(R.string.stat_attack),
             value = detail?.info?.attack ?: 0,
             color = Color(0xFFFF5722),
             modifier = Modifier.fillMaxWidth()
@@ -46,7 +48,7 @@ fun InfoSection(
         Spacer(modifier = Modifier.height(20.dp))
 
         InfoStatItem(
-            title = "Magic",
+            title = stringResource(R.string.stat_magic),
             value = detail?.info?.magic ?: 0,
             color = Color(0xFF2196F3),
             modifier = Modifier.fillMaxWidth()
@@ -55,7 +57,7 @@ fun InfoSection(
         Spacer(modifier = Modifier.height(20.dp))
 
         InfoStatItem(
-            title = "Defence",
+            title = stringResource(R.string.stat_defence),
             value = detail?.info?.defense ?: 0,
             color = Color(0xFF4CAF50),
             modifier = Modifier.fillMaxWidth()

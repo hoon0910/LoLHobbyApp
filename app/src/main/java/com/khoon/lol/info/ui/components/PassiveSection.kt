@@ -5,8 +5,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.khoon.lol.info.R
 import com.khoon.lol.info.model.ChampionDetail
 
 @Composable
@@ -17,7 +19,7 @@ fun PassiveSection(
     detail?.passive?.let { passive ->
         Column(modifier = modifier) {
             Text(
-                "Passive: ${passive.name}",
+                stringResource(R.string.passive_with_name, passive.name),
                 fontSize = 24.sp,
                 style = MaterialTheme.typography.titleLarge
             )

@@ -11,6 +11,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.ui.res.stringResource
+import com.khoon.lol.info.R
 
 @Composable
 fun ChampionListWithFab(
@@ -30,7 +32,7 @@ fun ChampionListWithFab(
                 FloatingActionButton(onClick = onScrollToTop) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = "Scroll to top"
+                        contentDescription = stringResource(R.string.cd_scroll_to_top)
                     )
                 }
             }
