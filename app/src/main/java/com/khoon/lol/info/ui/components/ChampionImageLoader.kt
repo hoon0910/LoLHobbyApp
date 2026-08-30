@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
@@ -61,7 +62,7 @@ fun ChampionImageLoader(
                                 .crossfade(true)
                                 .build()
                         },
-                        contentDescription = "Champion Image",
+                        contentDescription = stringResource(R.string.cd_champion_image),
                         contentScale = contentScale,
                         modifier = Modifier.fillMaxSize(),
                         loading = {
@@ -95,7 +96,7 @@ fun ChampionImageLoader(
                         .crossfade(true)
                         .build()
                 },
-                contentDescription = "Champion Image",
+                contentDescription = stringResource(R.string.cd_champion_image),
                 contentScale = contentScale,
                 modifier = Modifier.fillMaxSize(),
                 loading = {

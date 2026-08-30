@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.khoon.lol.info.R
 
 @Composable
@@ -20,7 +21,7 @@ fun HomeScreenLandscape(onImageClick: () -> Unit, onSummonerClick: () -> Unit) {
     ) {
         Image(
             painter = painterResource(id = R.drawable.azir_champion_page),
-            contentDescription = "Splash",
+            contentDescription = stringResource(R.string.cd_splash),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .weight(1f)
@@ -29,7 +30,7 @@ fun HomeScreenLandscape(onImageClick: () -> Unit, onSummonerClick: () -> Unit) {
         )
         Image(
             painter = painterResource(id = R.drawable.ekko_summoner_page),
-            contentDescription = "Go to Summoner Page",
+            contentDescription = stringResource(R.string.cd_go_to_summoner_page),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .weight(1f)

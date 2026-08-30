@@ -21,7 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.khoon.lol.info.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.khoon.lol.info.model.ChampionDetail
 import com.khoon.lol.info.model.ChampionDetailViewModel
@@ -77,7 +79,11 @@ fun ChampionDetailTabbedContent(
     modifier: Modifier = Modifier // Allow passing modifiers for Portrait/Landscape specific layout
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabTitles = listOf("Info", "Stats", "Skills")
+    val tabTitles = listOf(
+        stringResource(R.string.tab_info),
+        stringResource(R.string.tab_stats),
+        stringResource(R.string.tab_skills)
+    )
 
     Column(modifier = modifier) { // Apply modifier here
         TabRow(selectedTabIndex = selectedTabIndex) {

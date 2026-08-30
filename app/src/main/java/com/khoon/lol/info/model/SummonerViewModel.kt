@@ -1,15 +1,18 @@
 package com.khoon.lol.info.model
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khoon.lol.info.BuildConfig
+import com.khoon.lol.info.R
 import com.khoon.lol.info.data.api.LeagueOfLegendAPI
 import com.khoon.lol.info.data.api.MockLoLApi
 import com.khoon.lol.info.data.repository.ChampionRepository
 import com.khoon.lol.info.di.DispatcherModule
 import com.khoon.lol.info.utils.constant.AppConstant.API_KEY
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SummonerViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val riotApiService: LeagueOfLegendAPI,
     private val mockLoLApi: MockLoLApi,
     private val championRepository: ChampionRepository,
@@ -41,13 +45,13 @@ class SummonerViewModel @Inject constructor(
 
             val parsed = parseRiotId(riotId)
             if (parsed == null) {
-                _accountResult.value = "Invalid Riot ID. Use Name#Tag (e.g. Faker#KR1)"
+                _accountResult.value = context.getString(R.string.invalid_riot_id)
                 return@launch
             }
             val (gameName, tagLine) = parsed
 
             if (!BuildConfig.USE_MOCK_SERVER) {
-                _accountResult.value = "Account by Riot ID is available in stg (mock) only"
+                _accountResult.value = context.getString(R.string.account_riot_id_stg_only)
                 return@launch
             }
 
@@ -55,21 +59,25 @@ class SummonerViewModel @Inject constructor(
                 Log.d("khoon", "Account by Riot ID: $gameName#$tagLine → ${BuildConfig.MOCK_BASE_URL}")
                 val accountResponse = mockLoLApi.getAccountByRiotId(gameName, tagLine)
                 if (!accountResponse.isSuccessful) {
-                    _accountResult.value =
-                        "API error: ${accountResponse.code()}\n${accountResponse.errorBody()?.string().orEmpty()}"
+                    _accountResult.value = context.getString(
+                        R.string.api_error,
+                        accountResponse.code(),
+                        accountResponse.errorBody()?.string().orEmpty()
+                    )
                     return@launch
                 }
 
                 val account = accountResponse.body()
-                _accountResult.value = buildString {
-                    append("gameName: ${account?.gameName}\n")
-                    append("tagLine: ${account?.tagLine}\n")
-                    append("puuid: ${account?.puuid}")
-                }
+                _accountResult.value = context.getString(
+                    R.string.account_info_format,
+                    account?.gameName.orEmpty(),
+                    account?.tagLine.orEmpty(),
+                    account?.puuid.orEmpty()
+                )
 
                 val puuid = account?.puuid
                 if (puuid.isNullOrBlank()) {
-                    _summonerByPuuidResult.value = "Summoner lookup skipped: missing puuid"
+                    _summonerByPuuidResult.value = context.getString(R.string.summoner_lookup_skipped)
                     return@launch
                 }
 
@@ -77,21 +85,24 @@ class SummonerViewModel @Inject constructor(
                 val summonerResponse = mockLoLApi.getSummonerByPuuid(puuid)
                 if (summonerResponse.isSuccessful) {
                     val summoner = summonerResponse.body()
-                    _summonerByPuuidResult.value = buildString {
-                        append("summonerLevel: ${summoner?.summonerLevel}\n")
-                        append("profileIconId: ${summoner?.profileIconId}\n")
-                        append("id: ${summoner?.id}\n")
-                        append("accountId: ${summoner?.accountId}\n")
-                        append("puuid: ${summoner?.puuid}")
-                    }
+                    _summonerByPuuidResult.value = context.getString(
+                        R.string.summoner_by_puuid_format,
+                        summoner?.summonerLevel?.toString().orEmpty(),
+                        summoner?.profileIconId?.toString().orEmpty(),
+                        summoner?.id.orEmpty(),
+                        summoner?.accountId.orEmpty(),
+                        summoner?.puuid.orEmpty()
+                    )
                 } else {
-                    _summonerByPuuidResult.value =
-                        "Summoner API error: ${summonerResponse.code()}\n" +
-                            summonerResponse.errorBody()?.string().orEmpty()
+                    _summonerByPuuidResult.value = context.getString(
+                        R.string.summoner_api_error,
+                        summonerResponse.code(),
+                        summonerResponse.errorBody()?.string().orEmpty()
+                    )
                 }
             } catch (e: Exception) {
                 Log.e("khoon", "Account by Riot ID failed: ${e.message}", e)
-                _accountResult.value = "Network error: ${e.message}"
+                _accountResult.value = context.getString(R.string.network_error, e.message.orEmpty())
                 _summonerByPuuidResult.value = ""
             }
         }
@@ -131,7 +142,12 @@ class SummonerViewModel @Inject constructor(
                 if (response.isSuccessful) {
                     Log.d("khoon", "API call successful")
                     val dto = response.body()
-                    _result.value = "Name: $in_name\nLevel: ${dto?.summonerLevel}\nID: ${dto?.id}"
+                    _result.value = context.getString(
+                        R.string.summoner_result_format,
+                        in_name,
+                        dto?.summonerLevel?.toString().orEmpty(),
+                        dto?.id.orEmpty()
+                    )
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e("khoon", "=== API Error Details ===")
@@ -139,7 +155,11 @@ class SummonerViewModel @Inject constructor(
                     Log.e("khoon", "Error body: $errorBody")
                     Log.e("khoon", "Error headers: ${response.headers()}")
 
-                    _result.value = "API error: ${response.code()}\nError: $errorBody"
+                    _result.value = context.getString(
+                        R.string.summoner_api_error_with_body,
+                        response.code(),
+                        errorBody.orEmpty()
+                    )
                 }
             } catch (e: Exception) {
                 Log.e("khoon", "=== Network Exception ===")
@@ -147,7 +167,7 @@ class SummonerViewModel @Inject constructor(
                 Log.e("khoon", "Exception message: ${e.message}")
                 e.printStackTrace()
 
-                _result.value = "Network error: ${e.message}"
+                _result.value = context.getString(R.string.network_error, e.message.orEmpty())
             }
         }
     }

@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.khoon.lol.info.R
 import com.khoon.lol.info.model.SummonerViewModel
 import com.khoon.lol.info.ui.components.ChampionImageLoader
 import kotlin.time.Duration.Companion.milliseconds
@@ -99,7 +101,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                     .padding(vertical = 8.dp)
             ) {
                 Text(
-                    text = "Rotation Champions",
+                    text = stringResource(R.string.rotation_champions),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -158,7 +160,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                     .padding(vertical = 8.dp)
             ) {
                 Text(
-                    text = "Account by Riot ID",
+                    text = stringResource(R.string.account_by_riot_id),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -171,8 +173,8 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                     OutlinedTextField(
                         value = riotIdQuery,
                         onValueChange = { riotIdQuery = it },
-                        label = { Text("Riot ID") },
-                        placeholder = { Text("Name#Tag") },
+                        label = { Text(stringResource(R.string.label_riot_id)) },
+                        placeholder = { Text(stringResource(R.string.placeholder_riot_id)) },
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 8.dp)
@@ -196,7 +198,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                         },
                         enabled = riotIdQuery.isNotBlank()
                     ) {
-                        Text("Search")
+                        Text(stringResource(R.string.search))
                     }
                 }
             }
@@ -209,7 +211,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                         .padding(vertical = 8.dp)
                 ) {
                     Text(
-                        text = "Account Info",
+                        text = stringResource(R.string.account_info),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -245,7 +247,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                         .padding(vertical = 8.dp)
                 ) {
                     Text(
-                        text = "Summoner Info",
+                        text = stringResource(R.string.summoner_info),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -282,7 +284,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                     .padding(vertical = 8.dp)
             ) {
                 Text(
-                    text = "Search a Summoner",
+                    text = stringResource(R.string.search_a_summoner),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -300,7 +302,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                             value = selectedServer,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Server") },
+                            label = { Text(stringResource(R.string.label_server)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                             modifier = Modifier
                                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true) // 변경된 사용
@@ -325,7 +327,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                     OutlinedTextField(
                         value = query,
                         onValueChange = { query = it },
-                        label = { Text("Summoner Name") },
+                        label = { Text(stringResource(R.string.label_summoner_name)) },
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 8.dp)
@@ -338,7 +340,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                         },
                         enabled = query.isNotBlank()
                     ) {
-                        Text("Search")
+                        Text(stringResource(R.string.search))
                     }
                 }
             }
@@ -352,7 +354,7 @@ fun SummonerSearchScreen(viewModel: SummonerViewModel = hiltViewModel()) {
                         .padding(vertical = 8.dp)
                 ) {
                     Text(
-                        text = "Summoner Info",
+                        text = stringResource(R.string.summoner_info),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)

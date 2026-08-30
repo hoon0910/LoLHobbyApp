@@ -15,8 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.khoon.lol.info.R
 import com.khoon.lol.info.model.ChampionEntity
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -51,7 +53,7 @@ fun ChampionListContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No Champion",
+                    text = stringResource(R.string.no_champion),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )

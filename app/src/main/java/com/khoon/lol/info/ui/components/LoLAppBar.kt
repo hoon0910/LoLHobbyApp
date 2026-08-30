@@ -16,13 +16,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.khoon.lol.info.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoLAppBar(
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
-    title: String = "LOL COMPOSE",
+    title: String? = null,
     showFavoriteButton: Boolean = false,
     isFavorite: Boolean = false,
     onFavoriteClick: () -> Unit = {}
@@ -30,7 +32,7 @@ fun LoLAppBar(
     TopAppBar(
         title = {
             Text(
-                text = title,
+                text = title ?: stringResource(R.string.app_bar_title),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -40,7 +42,7 @@ fun LoLAppBar(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
+                        contentDescription = stringResource(R.string.cd_back)
                     )
                 }
             }

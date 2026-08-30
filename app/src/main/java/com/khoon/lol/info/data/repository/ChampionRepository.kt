@@ -8,6 +8,7 @@ import com.khoon.lol.info.data.db.ChampionDao
 import com.khoon.lol.info.di.DispatcherModule
 import com.khoon.lol.info.model.ChampionDetail
 import com.khoon.lol.info.model.ChampionEntity
+import com.khoon.lol.info.R
 import com.khoon.lol.info.utils.constant.AppConstant.API_KEY
 import com.khoon.lol.info.utils.constant.AppConstant.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -168,7 +169,7 @@ class ChampionRepositoryImpl @Inject constructor(
                 }
             } else {
                 Log.d("khoon", "error")
-                listOf("Error: ${response.message()}")
+                listOf(context.getString(R.string.error_with_message, response.message()))
             }
         }
     }

@@ -10,7 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.khoon.lol.info.R
 
 @Composable
 fun CustomSearchBar(
@@ -28,12 +30,12 @@ fun CustomSearchBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
-            Icon(Icons.Default.Search, contentDescription = "Search")
+            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.cd_search))
             Spacer(modifier = Modifier.width(8.dp))
             TextField(
                 value = query,
                 onValueChange = onQueryChange,
-                placeholder = { Text("Search champions...") },
+                placeholder = { Text(stringResource(R.string.search_champions_placeholder)) },
                 modifier = Modifier
                     .weight(1f),
                 singleLine = true,
@@ -50,7 +52,7 @@ fun CustomSearchBar(
                 ) {
                     Icon(
                         Icons.Default.Clear,
-                        contentDescription = "Clear search",
+                        contentDescription = stringResource(R.string.cd_clear_search),
                         tint = Color.Gray
                     )
                 }

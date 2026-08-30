@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.res.stringResource
+import com.khoon.lol.info.R
 import com.khoon.lol.info.model.ChampionDetailViewModel
 import com.khoon.lol.info.navigation.NavGraph
 import com.khoon.lol.info.navigation.NavRoutes
@@ -90,9 +92,9 @@ fun MainCompose() {
                     }
                 },
                 title = if (currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true) {
-                    championId ?: "LOL DETAIL"
+                    championId ?: stringResource(R.string.app_bar_detail_fallback)
                 } else {
-                    "LOL COMPOSE"
+                    stringResource(R.string.app_bar_title)
                 },
                 showFavoriteButton = currentRoute?.startsWith(NavRoutes.ChampionDetail.route) == true,
                 isFavorite = championEntity?.isFavorite ?: false,

@@ -3,6 +3,8 @@ package com.khoon.lol.info.ui.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.khoon.lol.info.R
 
 @Composable
 fun ChampionListHeaderBarNormalMode(
@@ -28,7 +30,7 @@ fun ChampionListHeaderBarNormalMode(
                     onSearchModeChange(true)
                 },
                 icon = Icons.Default.Search,
-                contentDescription = "Search"
+                contentDescription = stringResource(R.string.cd_search)
             )
         }
     )

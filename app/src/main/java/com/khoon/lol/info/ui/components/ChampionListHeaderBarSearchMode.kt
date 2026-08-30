@@ -5,7 +5,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.khoon.lol.info.R
 
 @Composable
 fun ChampionListHeaderBarSearchMode(
@@ -39,7 +41,7 @@ fun ChampionListHeaderBarSearchMode(
                     onSearchModeChange(false)
                 },
                 icon = Icons.Default.Close,
-                contentDescription = "Close Search"
+                contentDescription = stringResource(R.string.cd_close_search)
             )
         }
     )
